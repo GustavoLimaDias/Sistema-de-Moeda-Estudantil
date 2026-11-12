@@ -38,7 +38,7 @@ Base: tag `release-1` (fim do Lab 3). Novos casos de uso e endpoints:
 - Nova coluna `resgate_vantagem.data_cancelamento`: apague a pasta `data/` antes de rodar se você já tinha o banco H2 da Release 1.
 - Testes novos em `Release2IntegrationTest`.
 
-Modelagem em `docs/uml/release2`: casos de uso v2, 14 diagramas de sequência (`sequencia/`), diagrama de visão geral de interação, classes v4, ER v3 e o PDF da entrega (`Lab04S01_Moeda_Estudantil.pdf`).
+Modelagem em `docs/uml/release2`: casos de uso v2, 14 diagramas de sequência (`sequencia/`), diagrama de visão geral de interação, classes v4, componentes v4, ER v3 e o PDF da entrega (`Lab04S01_Moeda_Estudantil.pdf`).
 
 ## Arquitetura (MVC)
 
