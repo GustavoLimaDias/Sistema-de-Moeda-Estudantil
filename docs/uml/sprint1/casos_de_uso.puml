@@ -1,0 +1,77 @@
+@startuml casos_de_uso
+left to right direction
+skinparam shadowing false
+skinparam defaultFontName Helvetica
+skinparam defaultFontSize 13
+skinparam packageStyle rectangle
+skinparam actorStyle awesome
+skinparam usecase {
+  BackgroundColor #EEF3FB
+  BorderColor #2F5597
+  ArrowColor #404040
+}
+skinparam rectangle {
+  BorderColor #2F5597
+  BackgroundColor #FFFFFF
+}
+skinparam ArrowColor #404040
+skinparam ActorBorderColor #2F5597
+
+actor "Usuário" as U
+actor "Aluno" as A
+actor "Professor" as P
+actor "Empresa Parceira" as E
+actor "Administrador" as ADM
+actor "Tempo\n(início de semestre)" as T
+actor "Serviço de Email" as MAIL
+
+A -|> U
+P -|> U
+E -|> U
+ADM -|> U
+
+rectangle "Sistema de Moeda Estudantil" {
+  usecase "Realizar login" as UC01
+  usecase "Cadastrar-se como aluno" as UC02
+  usecase "Cadastrar-se como\nempresa parceira" as UC03
+  usecase "Consultar extrato" as UC04
+  usecase "Enviar moedas" as UC05
+  usecase "Notificar aluno\npor email" as UC06
+  usecase "Consultar vantagens" as UC07
+  usecase "Resgatar vantagem" as UC08
+  usecase "Gerar código\nde cupom" as UC09
+  usecase "Enviar emails de cupom\n(aluno e parceiro)" as UC10
+  usecase "Gerenciar vantagens" as UC11
+  usecase "Creditar moedas\nsemestrais" as UC12
+  usecase "Gerenciar instituições" as UC13
+  usecase "Importar professores\nda instituição" as UC14
+  usecase "Gerenciar perfil" as UC15
+}
+
+U --> UC01
+U --> UC15
+
+A --> UC02
+A --> UC04
+A --> UC07
+A --> UC08
+
+P --> UC05
+P --> UC04
+
+E --> UC03
+E --> UC11
+
+ADM --> UC13
+ADM --> UC14
+
+T --> UC12
+
+UC05 ..> UC06 : <<include>>
+UC08 ..> UC09 : <<include>>
+UC08 ..> UC10 : <<include>>
+
+UC06 --> MAIL
+UC10 --> MAIL
+
+@enduml

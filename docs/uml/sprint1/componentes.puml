@@ -1,0 +1,106 @@
+@startuml componentes
+skinparam shadowing false
+skinparam defaultFontName Helvetica
+skinparam defaultFontSize 12
+skinparam componentStyle uml2
+skinparam linetype ortho
+skinparam nodesep 40
+skinparam ranksep 65
+skinparam ArrowColor #404040
+skinparam component {
+  BorderColor #2F5597
+  BackgroundColor #EEF3FB
+  BackgroundColor<<View>> #E8F5E9
+  BorderColor<<View>> #2E7D32
+  BackgroundColor<<Controller>> #FFF4E0
+  BorderColor<<Controller>> #B26A00
+  BackgroundColor<<Service>> #EEF3FB
+  BackgroundColor<<Repository>> #F3E8FA
+  BorderColor<<Repository>> #6A1B9A
+  BackgroundColor<<Infra>> #F2F2F2
+  BorderColor<<Infra>> #555555
+}
+skinparam database {
+  BackgroundColor #F3E8FA
+  BorderColor #6A1B9A
+}
+skinparam cloud {
+  BackgroundColor #F2F2F2
+  BorderColor #555555
+}
+skinparam folder {
+  BackgroundColor #F2F2F2
+  BorderColor #555555
+}
+
+' ---------- Camada View ----------
+component "Front-end Web\n(Telas de Login/Cadastro, Aluno,\nProfessor e Empresa Parceira)\nconsome API REST (HTTP/JSON)" as VIEW <<View>>
+
+' ---------- Camada Controller ----------
+component "AuthController" as CAuth <<Controller>>
+component "AlunoController" as CAluno <<Controller>>
+component "ProfessorController" as CProf <<Controller>>
+component "AgendadorSemestral" as Sched <<Infra>>
+component "NotificacaoEmail" as Notif <<Infra>>
+cloud "Servidor SMTP" as SMTP
+component "EmpresaController" as CEmp <<Controller>>
+
+' ---------- Camada Model: serviços ----------
+component "UsuarioService\n(cadastro e autenticação)" as SUsu <<Service>>
+component "TransacaoService\n(envio, resgate, extrato, crédito)" as STrans <<Service>>
+component "VantagemService" as SVant <<Service>>
+folder "Armazenamento\nde Imagens" as IMG
+
+' ---------- Camada Model: persistência ----------
+component "UsuarioRepository" as RUsu <<Repository>>
+component "TransacaoRepository" as RTrans <<Repository>>
+component "VantagemRepository" as RVant <<Repository>>
+database "Banco de Dados\nRelacional" as DB
+
+' ordem horizontal
+CAuth -[hidden]right- CAluno
+CAluno -[hidden]right- CProf
+CProf -[hidden]right- Sched
+Sched -[hidden]right- Notif
+CEmp -[hidden]left- SMTP
+SUsu -[hidden]right- STrans
+
+' View -> Controllers (HTTP/JSON)
+VIEW --> CAuth
+VIEW --> CAluno
+VIEW --> CProf
+VIEW --> CEmp
+
+' Controllers -> Services
+CAuth --> SUsu
+CAluno --> SUsu
+CAluno --> STrans
+CProf --> STrans
+CEmp --> SVant
+Sched --> STrans : crédito de\n1.000 moedas
+
+' Services
+STrans -up-> Notif : emails
+Notif -right-> SMTP
+STrans -right-> SVant
+SVant -right-> IMG
+
+' Services -> Repositories
+SUsu --> RUsu
+STrans --> RUsu
+STrans --> RTrans
+SVant --> RVant
+
+RUsu --> DB
+RTrans --> DB
+RVant --> DB
+
+legend right
+  |= Cor |= Camada MVC |
+  |<#E8F5E9>      | View |
+  |<#FFF4E0>      | Controller |
+  |<#EEF3FB>      | Model – Serviços |
+  |<#F3E8FA>      | Model – Persistência (DAO/ORM) |
+  |<#F2F2F2>      | Infraestrutura / externos |
+endlegend
+@enduml
