@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Alunos · Moeda Estudantil</title>
+  <link rel="stylesheet" href="/css/app.css">
+</head>
+<body>
+<header class="topo">
+  <div class="conteudo">
+    <a class="marca" href="/index.html"><span class="moeda">M</span><span class="nome">Moeda Estudantil</span></a>
+    <nav class="menu">
+      <a href="/index.html">Início</a>
+      <a href="/alunos.html" class="ativo">Alunos</a>
+      <a href="/empresas.html">Empresas parceiras</a>
+    </nav>
+  </div>
+</header>
+<main class="conteudo">
+  <div class="cabecalho">
+    <div>
+      <h1>Alunos</h1>
+      <p>Alunos cadastrados no sistema de mérito.</p>
+    </div>
+    <button class="btn" id="novo">+ Novo aluno</button>
+  </div>
+
+  <section class="cartao">
+    <div class="barra">
+      <input class="busca" id="busca" type="search" placeholder="Buscar por nome, email, CPF ou curso">
+      <span class="contagem" id="contagem"></span>
+    </div>
+    <div class="tabela-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Aluno</th>
+          <th class="ocultar-mobile">CPF</th>
+          <th class="ocultar-mobile">Instituição / curso</th>
+          <th>Saldo</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody id="tabela"></tbody>
+    </table>
+    </div>
+    <div class="vazio" id="vazio" hidden>Nenhum aluno encontrado.</div>
+  </section>
+</main>
+
+<dialog id="modal">
+  <form id="form" novalidate>
+    <div class="modal-topo">
+      <h2 id="titulo">Novo aluno</h2>
+      <button type="button" class="fechar" data-fechar aria-label="Fechar">×</button>
+    </div>
+    <div class="modal-corpo">
+      <div class="alerta" hidden></div>
+      <fieldset>
+        <legend>Dados pessoais</legend>
+        <div class="grade">
+          <div class="campo c4"><label for="nome">Nome completo</label><input id="nome" name="nome" maxlength="120"><div class="msg-erro"></div></div>
+          <div class="campo c2"><label for="email">Email</label><input id="email" name="email" type="email" maxlength="120"><div class="msg-erro"></div></div>
+          <div class="campo c2"><label for="cpf">CPF</label><input id="cpf" name="cpf" data-mascara="cpf" placeholder="000.000.000-00"><div class="msg-erro"></div></div>
+          <div class="campo c2"><label for="rg">RG</label><input id="rg" name="rg" maxlength="20"><div class="msg-erro"></div></div>
+          <div class="campo c2"><label for="instituicaoId">Instituição de ensino</label><select id="instituicaoId" name="instituicaoId"></select><div class="msg-erro"></div></div>
+          <div class="campo c6"><label for="curso">Curso</label><input id="curso" name="curso" maxlength="100"><div class="msg-erro"></div></div>
+        </div>
+      </fieldset>
+      <fieldset>
+        <legend>Endereço</legend>
+        <div class="grade">
+          <div class="campo c2"><label for="cep">CEP</label><input id="cep" name="endereco.cep" data-mascara="cep" placeholder="00000-000"><div class="msg-erro"></div></div>
+          <div class="campo c4"><label for="logradouro">Logradouro</label><input id="logradouro" name="endereco.logradouro" maxlength="150"><div class="msg-erro"></div></div>
+          <div class="campo c1"><label for="numero">Número</label><input id="numero" name="endereco.numero" maxlength="10"><div class="msg-erro"></div></div>
+          <div class="campo c2"><label for="complemento">Complemento</label><input id="complemento" name="endereco.complemento" maxlength="60"><div class="msg-erro"></div></div>
+          <div class="campo c3"><label for="bairro">Bairro</label><input id="bairro" name="endereco.bairro" maxlength="80"><div class="msg-erro"></div></div>
+          <div class="campo c4"><label for="cidade">Cidade</label><input id="cidade" name="endereco.cidade" maxlength="80"><div class="msg-erro"></div></div>
+          <div class="campo c2"><label for="uf">UF</label><input id="uf" name="endereco.uf" maxlength="2" style="text-transform:uppercase"><div class="msg-erro"></div></div>
+        </div>
+      </fieldset>
+      <fieldset>
+        <legend>Acesso</legend>
+        <div class="grade">
+          <div class="campo c3"><label for="login">Login</label><input id="login" name="login" maxlength="60" autocomplete="off"><div class="msg-erro"></div></div>
+          <div class="campo c3"><label for="senha">Senha</label><input id="senha" name="senha" type="password" autocomplete="new-password"><div class="dica" id="dica-senha">Mínimo de 6 caracteres.</div><div class="msg-erro"></div></div>
+        </div>
+      </fieldset>
+    </div>
+    <div class="modal-rodape">
+      <button type="button" class="btn secundario" data-fechar>Cancelar</button>
+      <button type="submit" class="btn" id="salvar">Salvar</button>
+    </div>
+  </form>
+</dialog>
+<dialog id="confirmar" class="pequeno">
+  <div class="modal-corpo"><p data-texto style="margin:0"></p></div>
+  <div class="modal-rodape">
+    <button type="button" class="btn secundario" data-nao>Cancelar</button>
+    <button type="button" class="btn perigo" data-sim>Excluir</button>
+  </div>
+</dialog>
+<script src="/js/api.js"></script>
+<script src="/js/alunos.js"></script>
+</body>
+</html>

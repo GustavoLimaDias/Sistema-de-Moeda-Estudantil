@@ -1,0 +1,99 @@
+@startuml componentes
+skinparam shadowing false
+skinparam defaultFontName Helvetica
+skinparam defaultFontSize 12
+skinparam componentStyle uml2
+skinparam linetype ortho
+skinparam nodesep 35
+skinparam ranksep 60
+skinparam ArrowColor #404040
+skinparam component {
+  BorderColor #2F5597
+  BackgroundColor #EEF3FB
+  BackgroundColor<<View>> #E8F5E9
+  BorderColor<<View>> #2E7D32
+  BackgroundColor<<Controller>> #FFF4E0
+  BorderColor<<Controller>> #B26A00
+  BackgroundColor<<Repository>> #F3E8FA
+  BorderColor<<Repository>> #6A1B9A
+  BackgroundColor<<Sprint 3>> #FFFFFF
+  BorderColor<<Sprint 3>> #9E9E9E
+  FontColor<<Sprint 3>> #757575
+}
+skinparam database {
+  BackgroundColor #F3E8FA
+  BorderColor #6A1B9A
+}
+
+component "Front-end Web (HTML/CSS/JS)\nalunos.html · empresas.html · index.html\napi.js → fetch API REST (JSON)" as VIEW <<View>>
+
+component "AlunoController\n/api/alunos" as CAluno <<Controller>>
+component "InstituicaoController\n/api/instituicoes" as CInst <<Controller>>
+component "EmpresaParceiraController\n/api/empresas\n/api/empresas/{id}/vantagens" as CEmp <<Controller>>
+component "AuthController\nProfessorController" as CS3 <<Sprint 3>>
+
+component "AlunoService" as SAluno <<Service>>
+component "UsuarioService\n(email/login únicos, BCrypt)" as SUsu <<Service>>
+component "InstituicaoService" as SInst <<Service>>
+component "EmpresaParceiraService" as SEmp <<Service>>
+component "VantagemService" as SVant <<Service>>
+component "TransacaoService\nNotificacaoEmail" as SS3 <<Sprint 3>>
+
+component "AlunoRepository" as RAluno <<Repository>>
+component "UsuarioRepository" as RUsu <<Repository>>
+component "InstituicaoEnsinoRepository" as RInst <<Repository>>
+component "EmpresaParceiraRepository" as REmp <<Repository>>
+component "VantagemRepository" as RVant <<Repository>>
+component "ProfessorRepository\nTransacaoRepository" as ROut <<Repository>>
+
+database "H2 (padrão) / PostgreSQL\nJPA · Hibernate (ORM)" as DB
+
+CInst -[hidden]right- CAluno
+CAluno -[hidden]right- CEmp
+CEmp -[hidden]right- CS3
+RInst -[hidden]right- RAluno
+RAluno -[hidden]right- RUsu
+RUsu -[hidden]right- REmp
+REmp -[hidden]right- RVant
+RVant -[hidden]right- ROut
+
+VIEW --> CInst
+VIEW --> CAluno
+VIEW --> CEmp
+VIEW ..> CS3
+
+CInst --> SInst
+CAluno --> SAluno
+CEmp --> SEmp
+CEmp --> SVant
+CS3 ..> SS3
+
+SAluno -left-> SInst
+SAluno -right-> SUsu
+SEmp -left-> SUsu
+SVant -left-> SEmp
+
+SInst --> RInst
+SAluno --> RAluno
+SUsu --> RUsu
+SEmp --> REmp
+SVant --> RVant
+SS3 ..> ROut
+SVant -[hidden]right- SS3
+
+RInst --> DB
+RAluno --> DB
+RUsu --> DB
+REmp --> DB
+RVant --> DB
+ROut --> DB
+
+legend right
+  |= Cor |= Camada MVC |
+  |<#E8F5E9>      | View |
+  |<#FFF4E0>      | Controller |
+  |<#EEF3FB>      | Model – Serviços (regras de negócio) |
+  |<#F3E8FA>      | Model – Persistência (Repository/DAO + ORM) |
+  |<#FFFFFF>      | Planejado para a Sprint 3 (tracejado) |
+endlegend
+@enduml

@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Início · Moeda Estudantil</title>
+  <link rel="stylesheet" href="/css/app.css">
+</head>
+<body>
+<header class="topo">
+  <div class="conteudo">
+    <a class="marca" href="/index.html"><span class="moeda">M</span><span class="nome">Moeda Estudantil</span></a>
+    <nav class="menu">
+      <a href="/index.html" class="ativo">Início</a>
+      <a href="/alunos.html">Alunos</a>
+      <a href="/empresas.html">Empresas parceiras</a>
+    </nav>
+  </div>
+</header>
+<main class="conteudo">
+  <section class="hero">
+    <h1>Sistema de Moeda Estudantil</h1>
+    <p>Professores reconhecem o mérito dos alunos com moedas, que podem ser trocadas por vantagens oferecidas pelas empresas parceiras.</p>
+  </section>
+  <div class="atalhos">
+    <a class="cartao atalho" href="/alunos.html">
+      <div class="numero" id="qtd-alunos">–</div>
+      <h3>Alunos</h3>
+      <p>Cadastro, consulta, edição e exclusão de alunos.</p>
+      <span class="btn secundario pequeno">Gerenciar alunos →</span>
+    </a>
+    <a class="cartao atalho" href="/empresas.html">
+      <div class="numero" id="qtd-empresas">–</div>
+      <h3>Empresas parceiras</h3>
+      <p>Cadastro de empresas e das vantagens que elas oferecem.</p>
+      <span class="btn secundario pequeno">Gerenciar empresas →</span>
+    </a>
+    <div class="cartao atalho">
+      <div class="numero" id="qtd-instituicoes">–</div>
+      <h3>Instituições</h3>
+      <p id="lista-instituicoes" class="sub">Instituições de ensino pré-cadastradas.</p>
+    </div>
+  </div>
+</main>
+<script src="/js/api.js"></script>
+<script>
+  (async () => {
+    try {
+      const [alunos, empresas, insts] = await Promise.all([
+        API.get("/api/alunos"), API.get("/api/empresas"), API.get("/api/instituicoes")]);
+      document.getElementById("qtd-alunos").textContent = alunos.length;
+      document.getElementById("qtd-empresas").textContent = empresas.length;
+      document.getElementById("qtd-instituicoes").textContent = insts.length;
+      document.getElementById("lista-instituicoes").textContent = insts.map((i) => i.nome).join(" · ");
+    } catch (e) {
+      UI.toast(e.mensagem, "erro");
+    }
+  })();
+</script>
+</body>
+</html>

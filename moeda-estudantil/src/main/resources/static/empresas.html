@@ -1,0 +1,135 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Empresas parceiras · Moeda Estudantil</title>
+  <link rel="stylesheet" href="/css/app.css">
+</head>
+<body>
+<header class="topo">
+  <div class="conteudo">
+    <a class="marca" href="/index.html"><span class="moeda">M</span><span class="nome">Moeda Estudantil</span></a>
+    <nav class="menu">
+      <a href="/index.html">Início</a>
+      <a href="/alunos.html">Alunos</a>
+      <a href="/empresas.html" class="ativo">Empresas parceiras</a>
+    </nav>
+  </div>
+</header>
+<main class="conteudo">
+  <div class="cabecalho">
+    <div>
+      <h1>Empresas parceiras</h1>
+      <p>Empresas cadastradas e as vantagens que oferecem aos alunos.</p>
+    </div>
+    <button class="btn" id="novo">+ Nova empresa</button>
+  </div>
+
+  <section class="cartao">
+    <div class="barra">
+      <input class="busca" id="busca" type="search" placeholder="Buscar por nome, email ou CNPJ">
+      <span class="contagem" id="contagem"></span>
+    </div>
+    <div class="tabela-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Empresa</th>
+          <th class="ocultar-mobile">CNPJ</th>
+          <th>Vantagens</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody id="tabela"></tbody>
+    </table>
+    </div>
+    <div class="vazio" id="vazio" hidden>Nenhuma empresa encontrada.</div>
+  </section>
+</main>
+
+<!-- Cadastro / edição da empresa -->
+<dialog id="modal">
+  <form id="form" novalidate>
+    <div class="modal-topo">
+      <h2 id="titulo">Nova empresa</h2>
+      <button type="button" class="fechar" data-fechar aria-label="Fechar">×</button>
+    </div>
+    <div class="modal-corpo">
+      <div class="alerta" hidden></div>
+      <fieldset>
+        <legend>Dados da empresa</legend>
+        <div class="grade">
+          <div class="campo c4"><label for="nome">Nome</label><input id="nome" name="nome" maxlength="120"><div class="msg-erro"></div></div>
+          <div class="campo c2"><label for="cnpj">CNPJ</label><input id="cnpj" name="cnpj" data-mascara="cnpj" placeholder="00.000.000/0000-00"><div class="msg-erro"></div></div>
+          <div class="campo c6"><label for="email">Email</label><input id="email" name="email" type="email" maxlength="120"><div class="msg-erro"></div></div>
+          <div class="campo c6"><label for="descricao">Descrição</label><textarea id="descricao" name="descricao" maxlength="500"></textarea><div class="msg-erro"></div></div>
+        </div>
+      </fieldset>
+      <fieldset>
+        <legend>Acesso</legend>
+        <div class="grade">
+          <div class="campo c3"><label for="login">Login</label><input id="login" name="login" maxlength="60" autocomplete="off"><div class="msg-erro"></div></div>
+          <div class="campo c3"><label for="senha">Senha</label><input id="senha" name="senha" type="password" autocomplete="new-password"><div class="dica" id="dica-senha">Mínimo de 6 caracteres.</div><div class="msg-erro"></div></div>
+        </div>
+      </fieldset>
+    </div>
+    <div class="modal-rodape">
+      <button type="button" class="btn secundario" data-fechar>Cancelar</button>
+      <button type="submit" class="btn" id="salvar">Salvar</button>
+    </div>
+  </form>
+</dialog>
+
+<!-- Vantagens de uma empresa -->
+<dialog id="modal-vantagens">
+  <div class="modal-topo">
+    <h2 id="titulo-vantagens">Vantagens</h2>
+    <button type="button" class="fechar" data-fechar aria-label="Fechar">×</button>
+  </div>
+  <div class="modal-corpo">
+    <div class="bloco-vantagens">
+      <div class="topo-bloco">
+        <span class="sub" id="resumo-vantagens"></span>
+        <button type="button" class="btn pequeno" id="nova-vantagem">+ Nova vantagem</button>
+      </div>
+      <div class="vantagens" id="lista-vantagens"></div>
+      <div class="vazio" id="vazio-vantagens" hidden>Esta empresa ainda não cadastrou vantagens.</div>
+    </div>
+  </div>
+</dialog>
+
+<!-- Cadastro / edição de vantagem -->
+<dialog id="modal-vantagem" class="pequeno" style="width:min(560px, calc(100vw - 32px))">
+  <form id="form-vantagem" novalidate>
+    <div class="modal-topo">
+      <h2 id="titulo-vantagem">Nova vantagem</h2>
+      <button type="button" class="fechar" data-fechar aria-label="Fechar">×</button>
+    </div>
+    <div class="modal-corpo">
+      <div class="alerta" hidden></div>
+      <div class="grade">
+        <div class="campo c4"><label for="v-nome">Nome</label><input id="v-nome" name="nome" maxlength="120"><div class="msg-erro"></div></div>
+        <div class="campo c2"><label for="v-custo">Custo (moedas)</label><input id="v-custo" name="custo" type="number" min="1" step="1"><div class="msg-erro"></div></div>
+        <div class="campo c6"><label for="v-descricao">Descrição</label><textarea id="v-descricao" name="descricao" maxlength="1000"></textarea><div class="msg-erro"></div></div>
+        <div class="campo c6"><label for="v-foto">URL da foto do produto</label><input id="v-foto" name="fotoUrl" maxlength="500" placeholder="https://… ou /img/…"><div class="msg-erro"></div></div>
+        <div class="campo c6"><label class="check"><input type="checkbox" id="v-ativa" name="ativa"> Vantagem ativa (visível para os alunos)</label></div>
+      </div>
+    </div>
+    <div class="modal-rodape">
+      <button type="button" class="btn secundario" data-fechar>Cancelar</button>
+      <button type="submit" class="btn">Salvar</button>
+    </div>
+  </form>
+</dialog>
+<dialog id="confirmar" class="pequeno">
+  <div class="modal-corpo"><p data-texto style="margin:0"></p></div>
+  <div class="modal-rodape">
+    <button type="button" class="btn secundario" data-nao>Cancelar</button>
+    <button type="button" class="btn perigo" data-sim>Excluir</button>
+  </div>
+</dialog>
+<script src="/js/api.js"></script>
+<script src="/js/empresas.js"></script>
+</body>
+</html>
