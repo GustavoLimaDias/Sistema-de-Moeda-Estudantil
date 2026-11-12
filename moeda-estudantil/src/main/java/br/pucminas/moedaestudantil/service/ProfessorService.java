@@ -5,7 +5,10 @@ import br.pucminas.moedaestudantil.dto.ProfessorResponse;
 import br.pucminas.moedaestudantil.exception.RecursoNaoEncontradoException;
 import br.pucminas.moedaestudantil.exception.RegraNegocioException;
 import br.pucminas.moedaestudantil.model.Professor;
+import br.pucminas.moedaestudantil.repository.CreditoSemestralRepository;
 import br.pucminas.moedaestudantil.repository.ProfessorRepository;
+import br.pucminas.moedaestudantil.repository.TransferenciaMoedaRepository;
+import br.pucminas.moedaestudantil.security.TokenService;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.Validator;
 import org.springframework.stereotype.Service;
@@ -17,7 +20,7 @@ import java.util.List;
 import java.util.Set;
 
 /**
- * UC14 – Pré-cadastro de professores a partir da lista enviada pela instituição.
+ * UC14 – Gerenciar professores: pré-cadastro (individual ou lista da instituição), edição e exclusão.
  * Se nenhuma senha for informada, a senha inicial é o CPF (só dígitos).
  */
 @Service
@@ -29,11 +32,18 @@ public class ProfessorService {
     private final InstituicaoService instituicaoService;
     private final CreditoSemestralService creditoSemestralService;
     private final Validator validator;
+    private final TransferenciaMoedaRepository transferenciaRepository;
+    private final CreditoSemestralRepository creditoRepository;
+    private final TokenService tokenService;
 
     public ProfessorService(ProfessorRepository professorRepository, UsuarioService usuarioService,
                             InstituicaoService instituicaoService, CreditoSemestralService creditoSemestralService,
-                            Validator validator) {
+                            Validator validator, TransferenciaMoedaRepository transferenciaRepository,
+                            CreditoSemestralRepository creditoRepository, TokenService tokenService) {
         this.validator = validator;
+        this.transferenciaRepository = transferenciaRepository;
+        this.creditoRepository = creditoRepository;
+        this.tokenService = tokenService;
         this.professorRepository = professorRepository;
         this.usuarioService = usuarioService;
         this.instituicaoService = instituicaoService;
@@ -81,6 +91,37 @@ public class ProfessorService {
             }
         }
         return lista.stream().map(this::criarComLinha).map(ProfessorResponse::from).toList();
+    }
+
+    /** Edição pelo administrador. Senha vazia mantém a atual. */
+    public ProfessorResponse atualizar(Long id, ProfessorRequest request) {
+        Professor professor = buscarEntidade(id);
+        String cpf = Documentos.somenteDigitos(request.cpf());
+        if (!Documentos.cpfValido(cpf)) {
+            throw new RegraNegocioException("cpf", "CPF inválido.");
+        }
+        if (professorRepository.existsByCpfAndIdNot(cpf, id)) {
+            throw new RegraNegocioException("cpf", "Já existe um professor com este CPF.");
+        }
+        usuarioService.aplicarDadosDeAcesso(professor, id, request.nome(), request.email(), request.login(),
+                request.senha());
+        professor.setCpf(cpf);
+        professor.setDepartamento(request.departamento().trim());
+        professor.setInstituicao(instituicaoService.buscarEntidade(request.instituicaoId()));
+        tokenService.atualizarDados(professor);
+        return ProfessorResponse.from(professor);
+    }
+
+    /** Professor que já enviou moedas fica no histórico; os créditos semestrais saem junto com ele. */
+    public void excluir(Long id) {
+        Professor professor = buscarEntidade(id);
+        if (transferenciaRepository.existsByRemetenteId(id)) {
+            throw new RegraNegocioException("Este professor já enviou moedas e não pode ser excluído.");
+        }
+        creditoRepository.deleteAll(creditoRepository.findByProfessorIdOrderByDataHoraDesc(id));
+        professorRepository.delete(professor);
+        professorRepository.flush();
+        tokenService.revogarDoUsuario(id);
     }
 
     private Professor criarComLinha(ProfessorRequest request) {

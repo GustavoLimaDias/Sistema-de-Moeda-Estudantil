@@ -126,4 +126,11 @@ public class EmpresaParceiraController {
     public ResgateResponse conferir(@PathVariable String codigo, @UsuarioLogado SessaoUsuario sessao) {
         return transacaoService.conferirCupom(sessao.id(), codigo);
     }
+
+    /** UC17 – a empresa cancela um cupom que não pode atender; o aluno recebe as moedas de volta. */
+    @PostMapping("/me/resgates/{codigo}/cancelar")
+    @RequerPerfil(Perfil.EMPRESA)
+    public ResgateResponse cancelar(@PathVariable String codigo, @UsuarioLogado SessaoUsuario sessao) {
+        return transacaoService.cancelarResgateDaEmpresa(sessao.id(), codigo);
+    }
 }

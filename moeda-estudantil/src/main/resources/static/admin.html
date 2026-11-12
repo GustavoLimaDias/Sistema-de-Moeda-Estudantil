@@ -22,14 +22,14 @@
       <section class="cartao">
         <div class="barra"><strong>Professores cadastrados</strong><span class="contagem" id="contagem-prof"></span></div>
         <div class="tabela-wrap"><table>
-          <thead><tr><th>Professor</th><th class="ocultar-mobile">Instituição / departamento</th><th>Saldo</th></tr></thead>
+          <thead><tr><th>Professor</th><th class="ocultar-mobile">Instituição / departamento</th><th>Saldo</th><th></th></tr></thead>
           <tbody id="tabela-prof"></tbody>
         </table></div>
       </section>
       <div style="display:flex;flex-direction:column;gap:18px">
         <form class="cartao painel" id="form-prof" novalidate>
-          <h3>Cadastrar professor</h3>
-          <p class="sub">Sem senha, a senha inicial é o CPF (só números).</p>
+          <h3 id="titulo-prof">Cadastrar professor</h3>
+          <p class="sub" id="dica-prof">Sem senha, a senha inicial é o CPF (só números).</p>
           <div class="alerta" hidden></div>
           <div class="grade">
             <div class="campo c6"><label>Nome</label><input name="nome" maxlength="120"><div class="msg-erro"></div></div>
@@ -39,7 +39,7 @@
             <div class="campo c3"><label>Instituição</label><select name="instituicaoId" data-instituicoes></select><div class="msg-erro"></div></div>
             <div class="campo c3"><label>Departamento</label><input name="departamento" maxlength="100"><div class="msg-erro"></div></div>
           </div>
-          <div class="acoes"><button class="btn" type="submit">Cadastrar</button></div>
+          <div class="acoes"><button type="button" class="btn secundario" id="cancelar-prof" hidden>Cancelar edição</button><button class="btn" type="submit" id="salvar-prof">Cadastrar</button></div>
         </form>
         <form class="cartao painel" id="form-import" novalidate>
           <h3>Importar lista da instituição</h3>

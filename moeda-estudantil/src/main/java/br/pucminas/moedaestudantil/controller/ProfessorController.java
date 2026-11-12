@@ -59,6 +59,19 @@ public class ProfessorController {
         return ResponseEntity.created(URI.create("/api/professores/" + criado.id())).body(criado);
     }
 
+    @PutMapping("/{id}")
+    @RequerPerfil(Perfil.ADMIN)
+    public ProfessorResponse atualizar(@PathVariable Long id, @Valid @RequestBody ProfessorRequest request) {
+        return professorService.atualizar(id, request);
+    }
+
+    @DeleteMapping("/{id}")
+    @RequerPerfil(Perfil.ADMIN)
+    public ResponseEntity<Void> excluir(@PathVariable Long id) {
+        professorService.excluir(id);
+        return ResponseEntity.noContent().build();
+    }
+
     /** Importa a lista enviada pela instituição (tudo ou nada). */
     @PostMapping("/importacao")
     @RequerPerfil(Perfil.ADMIN)

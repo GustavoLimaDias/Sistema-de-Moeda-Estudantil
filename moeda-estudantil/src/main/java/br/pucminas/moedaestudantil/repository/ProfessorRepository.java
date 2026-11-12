@@ -15,6 +15,10 @@ public interface ProfessorRepository extends JpaRepository<Professor, Long> {
 
     boolean existsByCpf(String cpf);
 
+    boolean existsByCpfAndIdNot(String cpf, Long id);
+
+    boolean existsByInstituicaoId(Long instituicaoId);
+
     @EntityGraph(attributePaths = "instituicao")
     List<Professor> findAllByOrderByNomeAsc();
 

@@ -17,12 +17,13 @@ public record ResgateResponse(
         Long alunoId,
         String alunoNome,
         String alunoEmail,
-        int saldoAluno
+        int saldoAluno,
+        LocalDateTime dataCancelamento
 ) {
     public static ResgateResponse from(ResgateVantagem r) {
         return new ResgateResponse(r.getId(), r.getCodigoCupom(), r.getStatus().name(), r.getDataHora(),
                 r.getValor(), r.getVantagem().getId(), r.getVantagem().getNome(),
                 r.getVantagem().getEmpresa().getNome(), r.getAluno().getId(), r.getAluno().getNome(),
-                r.getAluno().getEmail(), r.getAluno().getSaldo());
+                r.getAluno().getEmail(), r.getAluno().getSaldo(), r.getDataCancelamento());
     }
 }

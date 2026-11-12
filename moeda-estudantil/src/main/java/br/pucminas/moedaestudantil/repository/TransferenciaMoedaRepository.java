@@ -19,4 +19,6 @@ public interface TransferenciaMoedaRepository extends JpaRepository<Transferenci
     Optional<TransferenciaMoeda> findWithParticipantesById(Long id);
 
     boolean existsByDestinatarioId(Long alunoId);
+
+    boolean existsByRemetenteId(Long professorId);
 }

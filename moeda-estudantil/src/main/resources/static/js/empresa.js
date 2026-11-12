@@ -34,7 +34,7 @@
         <td>${UI.escapar(r.vantagemNome)}<div class="sub">${r.custo} moedas</div></td>
         <td><code>${UI.escapar(r.codigoCupom)}</code></td>
         <td>${Componentes.statusCupom(r.status)}</td>
-        <td><div class="acoes">${r.status === "PENDENTE" ? `<button class="btn secundario pequeno" data-conferir="${r.codigoCupom}">Marcar como usado</button>` : ""}</div></td>
+        <td><div class="acoes">${r.status === "PENDENTE" ? `<button class="btn secundario pequeno" data-conferir="${r.codigoCupom}">Marcar como usado</button><button class="btn secundario pequeno" data-cancelar="${r.codigoCupom}">Cancelar</button>` : ""}</div></td>
       </tr>`).join("")}</tbody></table></div>`;
   }
 
@@ -62,6 +62,18 @@
     }
   });
   document.getElementById("resgates").addEventListener("click", async (ev) => {
+    const c = ev.target.closest("[data-cancelar]");
+    if (c) {
+      if (!(await UI.confirmar(`Cancelar o cupom ${c.dataset.cancelar}? O aluno recebe as moedas de volta e é avisado por email.`, "Cancelar cupom"))) return;
+      try {
+        await API.post(`/api/empresas/me/resgates/${encodeURIComponent(c.dataset.cancelar)}/cancelar`);
+        UI.toast("Cupom cancelado e moedas devolvidas ao aluno.");
+        await carregarResgates();
+      } catch (e) {
+        erro(e);
+      }
+      return;
+    }
     const b = ev.target.closest("[data-conferir]");
     if (!b) return;
     if (!(await UI.confirmar(`Confirmar a troca do cupom ${b.dataset.conferir}?`, "Confirmar"))) return;

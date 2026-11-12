@@ -95,4 +95,11 @@ public class AlunoController {
         ResgateResponse resgate = transacaoService.resgatarVantagem(sessao.id(), request.vantagemId());
         return ResponseEntity.status(201).body(resgate);
     }
+
+    /** UC17 – cancelar um cupom ainda não usado; as moedas voltam para o saldo. */
+    @PostMapping("/me/resgates/{codigo}/cancelar")
+    @RequerPerfil(Perfil.ALUNO)
+    public ResgateResponse cancelarResgate(@PathVariable String codigo, @UsuarioLogado SessaoUsuario sessao) {
+        return transacaoService.cancelarResgateDoAluno(sessao.id(), codigo);
+    }
 }

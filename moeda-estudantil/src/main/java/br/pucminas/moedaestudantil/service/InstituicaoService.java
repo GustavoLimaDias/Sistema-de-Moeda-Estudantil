@@ -5,7 +5,9 @@ import br.pucminas.moedaestudantil.dto.InstituicaoResponse;
 import br.pucminas.moedaestudantil.exception.RecursoNaoEncontradoException;
 import br.pucminas.moedaestudantil.exception.RegraNegocioException;
 import br.pucminas.moedaestudantil.model.InstituicaoEnsino;
+import br.pucminas.moedaestudantil.repository.AlunoRepository;
 import br.pucminas.moedaestudantil.repository.InstituicaoEnsinoRepository;
+import br.pucminas.moedaestudantil.repository.ProfessorRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -17,9 +19,14 @@ import java.util.List;
 public class InstituicaoService {
 
     private final InstituicaoEnsinoRepository repository;
+    private final AlunoRepository alunoRepository;
+    private final ProfessorRepository professorRepository;
 
-    public InstituicaoService(InstituicaoEnsinoRepository repository) {
+    public InstituicaoService(InstituicaoEnsinoRepository repository, AlunoRepository alunoRepository,
+                              ProfessorRepository professorRepository) {
         this.repository = repository;
+        this.alunoRepository = alunoRepository;
+        this.professorRepository = professorRepository;
     }
 
     public List<InstituicaoResponse> listar() {
@@ -44,6 +51,18 @@ public class InstituicaoService {
                 .orElseThrow(() -> new RecursoNaoEncontradoException("Instituição " + id + " não encontrada."));
         aplicar(instituicao, id, request);
         return InstituicaoResponse.from(repository.save(instituicao));
+    }
+
+    /** Só exclui instituição sem alunos nem professores vinculados. */
+    @Transactional
+    public void excluir(Long id) {
+        InstituicaoEnsino instituicao = repository.findById(id)
+                .orElseThrow(() -> new RecursoNaoEncontradoException("Instituição " + id + " não encontrada."));
+        if (alunoRepository.existsByInstituicaoId(id) || professorRepository.existsByInstituicaoId(id)) {
+            throw new RegraNegocioException("Esta instituição tem alunos ou professores vinculados e não pode ser excluída.");
+        }
+        repository.delete(instituicao);
+        repository.flush();
     }
 
     private void aplicar(InstituicaoEnsino instituicao, Long id, InstituicaoRequest request) {

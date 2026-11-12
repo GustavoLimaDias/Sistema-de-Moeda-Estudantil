@@ -17,6 +17,8 @@ public interface AlunoRepository extends JpaRepository<Aluno, Long> {
 
     boolean existsByCpfAndIdNot(String cpf, Long id);
 
+    boolean existsByInstituicaoId(Long instituicaoId);
+
     @EntityGraph(attributePaths = "instituicao")
     List<Aluno> findAllByOrderByNomeAsc();
 
