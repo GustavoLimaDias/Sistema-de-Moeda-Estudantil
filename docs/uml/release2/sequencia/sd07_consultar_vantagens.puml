@@ -1,0 +1,38 @@
+@startuml sd07_consultar_vantagens
+!include estilo.iuml
+title SD07 – Consultar vantagens (UC07)
+
+actor "Aluno" as A
+boundary "aluno.js" as V
+participant ":AutenticacaoInterceptor" as I
+participant ":VantagemController" as C
+participant ":VantagemService" as S
+participant ":VantagemRepository" as R
+database "Banco" as DB
+
+A -> V : abre a aba Vantagens
+V -> I : GET /api/vantagens
+activate I
+I -> I : usuário autenticado?
+I -> C : catalogo()
+deactivate I
+activate C
+C -> S : catalogo()
+activate S
+S -> R : findByAtivaTrueOrderByCustoAsc()
+note right of R : @EntityGraph("empresa"):\nempresa no mesmo SELECT
+R -> DB : SELECT vantagem JOIN empresa\nWHERE ativa ORDER BY custo
+R --> S : vantagens ativas
+S --> C : List<CatalogoVantagemResponse>
+deactivate S
+C --> V : 200
+deactivate C
+loop cada vantagem
+  alt custo ≤ saldo do aluno
+    V -> V : exibe o botão "Resgatar"
+  else custo > saldo
+    V -> V : exibe "faltam N moedas"
+  end
+end
+V --> A : catálogo com foto, descrição, empresa e custo
+@enduml

@@ -1,4 +1,4 @@
-# Sistema de Moeda Estudantil · versão final (Lab03S03)
+# Sistema de Moeda Estudantil · Release 2 (Lab04S01)
 
 Laboratório 3 de Projeto de Software (PUC Minas, Engenharia de Software, 2º/2026, Profa. Milena Menezes Adão).
 Integrante: **Gustavo Lima Dias**
@@ -20,6 +20,25 @@ oferecidas por empresas parceiras e recebem um cupom com código para a troca pr
 | Cadastro de empresa e de vantagens (descrição, foto, custo em moedas), CRUD final | `cadastro.html`, `empresa.html`, `admin-empresas.html` |
 | Resgate debitando o saldo, com código gerado e emails de cupom (aluno) e de conferência (empresa) | `aluno.html` → `TransacaoService.resgatarVantagem` |
 | Conferência do cupom pela empresa | `empresa.html` → `/api/empresas/me/resgates/{codigo}/conferir` |
+
+## Release 2 (Lab04S01) · branch `release-2`
+
+Base: tag `release-1` (fim do Lab 3). Novos casos de uso e endpoints:
+
+| UC | Caso de uso | Endpoint | Perfil |
+|---|---|---|---|
+| UC13 | Excluir instituição (sem vínculos) | `DELETE /api/instituicoes/{id}` | ADMIN |
+| UC14 | Editar / excluir professor (sem envios) | `PUT` e `DELETE /api/professores/{id}` | ADMIN |
+| UC15 | Alterar senha (botão **Senha** no topo) | `PUT /api/auth/senha` | qualquer |
+| UC17 | Cancelar cupom pendente, com estorno | `POST /api/alunos/me/resgates/{codigo}/cancelar` | ALUNO |
+| UC17 | Cancelar cupom pendente, com estorno | `POST /api/empresas/me/resgates/{codigo}/cancelar` | EMPRESA |
+| UC18 | Email de cancelamento para aluno e empresa | (automático, após o commit) | — |
+
+- O cancelamento devolve as moedas e aparece como **ESTORNO** no extrato; cupom já conferido ou cancelado → 422.
+- Nova coluna `resgate_vantagem.data_cancelamento`: apague a pasta `data/` antes de rodar se você já tinha o banco H2 da Release 1.
+- Testes novos em `Release2IntegrationTest`.
+
+Modelagem em `docs/uml/release2`: casos de uso v2, 14 diagramas de sequência (`sequencia/`), diagrama de visão geral de interação, classes v4, ER v3 e o PDF da entrega (`Lab04S01_Moeda_Estudantil.pdf`).
 
 ## Arquitetura (MVC)
 

@@ -1,0 +1,47 @@
+@startuml sd17_cancelar_resgate
+!include estilo.iuml
+title SD17 – Cancelar resgate com estorno (UC17 + UC18)
+
+actor "Aluno ou\nEmpresa" as U
+boundary "aluno.js /\nempresa.js" as V
+participant ":AlunoController /\n:EmpresaParceiraController" as C
+participant ":TransacaoService" as S
+participant ":ResgateVantagemRepository" as RR
+participant ":AlunoRepository" as RA
+database "Banco" as DB
+participant ":NotificacaoService" as N
+
+U -> V : "Cancelar" num cupom aguardando troca
+V -> C : POST /api/{alunos|empresas}/me/resgates/{codigo}/cancelar
+activate C
+C -> S : cancelarResgateDoAluno(alunoId, codigo)\nou cancelarResgateDaEmpresa(empresaId, codigo)
+activate S
+S -> RR : findParaAtualizarStatus(CODIGO)
+RR -> DB : SELECT … FOR UPDATE
+alt cupom não pertence ao aluno / à empresa
+  S --> C : RecursoNaoEncontradoException
+  C --> V : 404
+else cupom do solicitante
+  S -> RA : findParaAtualizarSaldo(alunoId)
+  RA -> DB : SELECT … FOR UPDATE
+  S -> S : resgate.cancelar()
+  alt status ≠ PENDENTE
+    S --> C : RegraNegocioException
+    C --> V : 422 "Este cupom já foi conferido."
+  else status = PENDENTE
+    S -> S : aluno.receberMoedas(custo)  (estorno)
+    S -> S : publishEvent(ResgateCanceladoEvent)
+    note over S, DB : COMMIT: status CANCELADO, data_cancelamento, saldo
+    S -> N : evento (AFTER_COMMIT) – UC18
+    activate N
+    N -> DB : email ao aluno (moedas devolvidas)
+    N -> DB : email à empresa (não aceitar o cupom)
+    deactivate N
+    S --> C : ResgateResponse
+    C --> V : 200
+    V --> U : cupom "Cancelado"; extrato mostra o estorno
+  end
+end
+deactivate S
+deactivate C
+@enduml

@@ -1,0 +1,37 @@
+@startuml sd16_conferir_cupom
+!include estilo.iuml
+title SD16 – Conferir cupom (UC16)
+
+actor "Empresa Parceira" as E
+boundary "empresa.js" as V
+participant ":EmpresaParceiraController" as C
+participant ":TransacaoService" as S
+participant ":ResgateVantagemRepository" as R
+database "Banco" as DB
+
+E -> V : digita o código apresentado pelo aluno
+V -> C : POST /api/empresas/me/resgates/{codigo}/conferir
+note right of C : interceptor: perfil EMPRESA
+activate C
+C -> S : conferirCupom(empresaId, codigo)
+activate S
+S -> R : findParaAtualizarStatus(CODIGO)
+R -> DB : SELECT … FOR UPDATE
+alt cupom inexistente ou de outra empresa
+  S --> C : RecursoNaoEncontradoException
+  C --> V : 404 "Cupom não encontrado para a sua empresa."
+else cupom da empresa
+  S -> S : resgate.conferir()
+  alt status ≠ PENDENTE (já usado ou cancelado)
+    S --> C : RegraNegocioException
+    C --> V : 422 "Este cupom já foi conferido/cancelado."
+  else status = PENDENTE
+    S -> DB : UPDATE status = CONFERIDO (no commit)
+    S --> C : ResgateResponse
+    C --> V : 200
+    V --> E : cupom marcado como utilizado
+  end
+end
+deactivate S
+deactivate C
+@enduml

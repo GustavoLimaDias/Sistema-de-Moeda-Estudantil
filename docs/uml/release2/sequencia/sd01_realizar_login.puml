@@ -1,0 +1,52 @@
+@startuml sd01_realizar_login
+!include estilo.iuml
+title SD01 – Realizar login (UC01)
+
+actor "Usuário" as U
+boundary "index.html\napi.js" as V
+participant ":AuthController" as C
+participant ":AutenticacaoService" as S
+participant ":UsuarioRepository" as R
+participant ":TokenService" as T
+database "Banco" as DB
+
+U -> V : informa login e senha
+V -> C : POST /api/auth/login {login, senha}
+note right of C : @Publico: o interceptor\nlibera sem token
+activate C
+C -> C : @Valid LoginRequest
+C -> S : login(request)
+activate S
+S -> R : findByLogin(login)
+R -> DB : SELECT usuario (JOIN perfil)
+R --> S : Optional<Usuario>
+S -> S : usuario.autenticar(login, senha, BCrypt)
+alt usuário inexistente ou senha incorreta
+  S --> C : NaoAutenticadoException
+  C --> V : 401 {mensagem: "Login ou senha inválidos."}
+  V --> U : exibe o erro no formulário
+else credenciais válidas
+  S -> T : emitir(usuario)
+  activate T
+  T -> T : gera token aleatório (256 bits)\nguarda sessão por 8 h
+  T --> S : token
+  deactivate T
+  S --> C : LoginResponse(token, usuario)
+  deactivate S
+  C --> V : 200 {token, usuario}
+  deactivate C
+  V -> V : Sessao.salvar(token) no localStorage
+  V --> U : abre o painel do perfil\n(aluno, professor, empresa ou admin)
+end
+
+== Requisições seguintes ==
+V -> C : qualquer /api/** com Authorization: Bearer token
+note over C : o AutenticacaoInterceptor valida o token\nno TokenService antes do controller;\ninválido ou expirado → 401 e volta ao login
+
+== Sair ==
+U -> V : clica em "Sair"
+V -> C : POST /api/auth/logout
+C -> T : revogar(token)
+C --> V : 204
+V -> V : Sessao.limpar()
+@enduml
