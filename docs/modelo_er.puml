@@ -109,6 +109,16 @@ entity "credito_semestral" as credito {
   <color:#2E7D32>UK</color> (professor_id, semestre)
 }
 
+entity "notificacao_email" as email {
+  PK(id) : BIGINT
+  --
+  destinatario : VARCHAR(120)
+  assunto : VARCHAR(200)
+  corpo : VARCHAR(4000)
+  data_hora : TIMESTAMP
+  status : VARCHAR(20)
+}
+
 entity "transacao" as transacao {
   PK(id) : BIGINT
   --
@@ -135,4 +145,5 @@ professor ||-down-o{ credito
 resgate |o-down-|| transacao
 transf |o-down-|| transacao
 credito |o-down-|| transacao
+transacao -[hidden]right- email
 @enduml

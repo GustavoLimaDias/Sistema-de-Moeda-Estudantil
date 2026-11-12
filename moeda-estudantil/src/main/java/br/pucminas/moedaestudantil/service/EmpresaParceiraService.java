@@ -6,6 +6,8 @@ import br.pucminas.moedaestudantil.exception.RecursoNaoEncontradoException;
 import br.pucminas.moedaestudantil.exception.RegraNegocioException;
 import br.pucminas.moedaestudantil.model.EmpresaParceira;
 import br.pucminas.moedaestudantil.repository.EmpresaParceiraRepository;
+import br.pucminas.moedaestudantil.repository.ResgateVantagemRepository;
+import br.pucminas.moedaestudantil.security.TokenService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -18,10 +20,15 @@ public class EmpresaParceiraService {
 
     private final EmpresaParceiraRepository empresaRepository;
     private final UsuarioService usuarioService;
+    private final ResgateVantagemRepository resgateRepository;
+    private final TokenService tokenService;
 
-    public EmpresaParceiraService(EmpresaParceiraRepository empresaRepository, UsuarioService usuarioService) {
+    public EmpresaParceiraService(EmpresaParceiraRepository empresaRepository, UsuarioService usuarioService,
+                                  ResgateVantagemRepository resgateRepository, TokenService tokenService) {
         this.empresaRepository = empresaRepository;
         this.usuarioService = usuarioService;
+        this.resgateRepository = resgateRepository;
+        this.tokenService = tokenService;
     }
 
     @Transactional(readOnly = true)
@@ -43,14 +50,21 @@ public class EmpresaParceiraService {
     public EmpresaResponse atualizar(Long id, EmpresaRequest request) {
         EmpresaParceira empresa = buscarEntidade(id);
         aplicar(empresa, id, request);
-        return EmpresaResponse.from(empresaRepository.save(empresa));
+        empresaRepository.save(empresa);
+        tokenService.atualizarDados(empresa);
+        return EmpresaResponse.from(empresa);
     }
 
     /** Remove a empresa e, por composição, suas vantagens. */
     public void excluir(Long id) {
         EmpresaParceira empresa = buscarEntidade(id);
+        if (resgateRepository.existsByVantagemEmpresaId(id)) {
+            throw new RegraNegocioException(
+                    "Esta empresa possui vantagens já resgatadas e não pode ser excluída. Desative as vantagens.");
+        }
         empresaRepository.delete(empresa);
         empresaRepository.flush();
+        tokenService.revogarDoUsuario(id);
     }
 
     EmpresaParceira buscarEntidade(Long id) {

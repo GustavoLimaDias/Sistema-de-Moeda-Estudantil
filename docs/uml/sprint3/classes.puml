@@ -1,0 +1,166 @@
+@startuml classes
+skinparam shadowing false
+skinparam defaultFontName Helvetica
+skinparam defaultFontSize 12
+skinparam classAttributeIconSize 0
+skinparam linetype ortho
+skinparam nodesep 60
+skinparam ranksep 70
+skinparam class {
+  BackgroundColor #EEF3FB
+  BorderColor #2F5597
+  ArrowColor #404040
+  HeaderBackgroundColor #D6E2F5
+}
+hide circle
+hide empty members
+
+abstract class Usuario {
+  - id : Long
+  - nome : String
+  - email : String
+  - login : String
+  - senhaHash : String
+  + {abstract} getPerfil() : Perfil
+  + autenticar(login : String, senha : String, encoder : PasswordEncoder) : boolean
+  + alterarSenha(nova : String, encoder : PasswordEncoder) : void
+}
+
+class Aluno {
+  - cpf : String
+  - rg : String
+  - curso : String
+  - saldo : int
+  + receberMoedas(valor : int) : void
+  + debitarMoedas(valor : int) : void
+}
+
+class Professor {
+  - cpf : String
+  - departamento : String
+  - saldo : int
+  + {static} CREDITO_SEMESTRAL : int = 1000
+  + creditarSemestre(valor : int) : void
+  + debitarMoedas(valor : int) : void
+}
+
+class EmpresaParceira {
+  - cnpj : String
+  - descricao : String
+  + cadastrarVantagem(v : Vantagem) : void
+  + removerVantagem(v : Vantagem) : void
+}
+
+class Administrador
+
+class Endereco {
+  - logradouro : String
+  - numero : String
+  - complemento : String
+  - bairro : String
+  - cidade : String
+  - uf : String
+  - cep : String
+}
+
+class InstituicaoEnsino {
+  - id : Long
+  - nome : String
+  - cnpj : String
+}
+
+class Vantagem {
+  - id : Long
+  - nome : String
+  - descricao : String
+  - fotoUrl : String
+  - custo : int
+  - ativa : boolean
+}
+
+abstract class Transacao {
+  - id : Long
+  - dataHora : LocalDateTime
+  - valor : int
+  + getDescricao() : String
+}
+
+class TransferenciaMoeda {
+  - motivo : String
+}
+
+class ResgateVantagem {
+  - codigoCupom : String
+  - status : StatusResgate
+  + gerarCodigo() : String
+  + conferir() : void
+}
+
+class CreditoSemestral {
+  - semestre : String
+}
+
+enum Perfil {
+  ALUNO
+  PROFESSOR
+  EMPRESA
+  ADMIN
+}
+
+class NotificacaoEmail {
+  - id : Long
+  - destinatario : String
+  - assunto : String
+  - corpo : String
+  - dataHora : LocalDateTime
+  - status : StatusEmail
+}
+
+enum StatusEmail {
+  ENVIADO
+  SIMULADO
+  FALHOU
+}
+
+enum StatusResgate {
+  PENDENTE
+  CONFERIDO
+  CANCELADO
+}
+
+Usuario <|-down- Administrador
+Usuario <|-down- EmpresaParceira
+Usuario <|-down- Aluno
+Usuario <|-down- Professor
+
+Administrador -[hidden]right- EmpresaParceira
+EmpresaParceira -[hidden]right- Endereco
+Aluno "1" *-left- "1" Endereco
+Aluno "0..*" -right-> "1" InstituicaoEnsino : estuda em
+Professor "0..*" -left-> "1" InstituicaoEnsino : vinculado a
+EmpresaParceira "1" *-down- "0..*" Vantagem : oferece
+
+ResgateVantagem "0..*" -left-> "1" Vantagem
+ResgateVantagem "0..*" -up-> "1" Aluno : resgatado por
+TransferenciaMoeda "0..*" -up-> "1" Aluno : destinatário
+TransferenciaMoeda "0..*" -up-> "1" Professor : remetente
+CreditoSemestral "0..*" -up-> "1" Professor : creditado a
+
+TransferenciaMoeda -down-|> Transacao
+ResgateVantagem -down-|> Transacao
+CreditoSemestral -down-|> Transacao
+StatusResgate -[hidden]right- Transacao
+Vantagem -[hidden]down- StatusResgate
+
+Usuario ..> Perfil
+NotificacaoEmail ..> StatusEmail
+Perfil -[hidden]down- NotificacaoEmail
+NotificacaoEmail -[hidden]right- StatusEmail
+
+note as N1
+  <b>v3 (Sprint 3 – versão final)</b>
+  • cada subclasse de Usuario informa seu Perfil (controle de acesso);
+  • ResgateVantagem.conferir() registra a troca presencial;
+  • NotificacaoEmail guarda cada email disparado pelo sistema.
+end note
+@enduml

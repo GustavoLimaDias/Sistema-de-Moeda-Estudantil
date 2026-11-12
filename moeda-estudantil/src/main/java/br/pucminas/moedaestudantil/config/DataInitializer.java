@@ -2,7 +2,6 @@ package br.pucminas.moedaestudantil.config;
 
 import br.pucminas.moedaestudantil.model.Administrador;
 import br.pucminas.moedaestudantil.model.Aluno;
-import br.pucminas.moedaestudantil.model.CreditoSemestral;
 import br.pucminas.moedaestudantil.model.EmpresaParceira;
 import br.pucminas.moedaestudantil.model.Endereco;
 import br.pucminas.moedaestudantil.model.InstituicaoEnsino;
@@ -13,7 +12,6 @@ import br.pucminas.moedaestudantil.repository.AlunoRepository;
 import br.pucminas.moedaestudantil.repository.EmpresaParceiraRepository;
 import br.pucminas.moedaestudantil.repository.InstituicaoEnsinoRepository;
 import br.pucminas.moedaestudantil.repository.ProfessorRepository;
-import br.pucminas.moedaestudantil.repository.TransacaoRepository;
 import br.pucminas.moedaestudantil.repository.UsuarioRepository;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -24,6 +22,7 @@ import org.springframework.transaction.annotation.Transactional;
  * Carga inicial executada só no primeiro start (banco vazio): instituições e
  * professores pré-cadastrados, um administrador e dados de demonstração.
  * Senha de todos os usuários de exemplo: 123456
+ * Logins: admin, carla.mendes, ricardo.alves (professores), ana.souza, lucas.pereira, marina.costa (alunos), cantina, papelaria (empresas)
  */
 @Component
 public class DataInitializer implements CommandLineRunner {
@@ -35,19 +34,16 @@ public class DataInitializer implements CommandLineRunner {
     private final AlunoRepository alunoRepository;
     private final EmpresaParceiraRepository empresaRepository;
     private final UsuarioRepository usuarioRepository;
-    private final TransacaoRepository transacaoRepository;
     private final PasswordEncoder encoder;
 
     public DataInitializer(InstituicaoEnsinoRepository instituicaoRepository, ProfessorRepository professorRepository,
                            AlunoRepository alunoRepository, EmpresaParceiraRepository empresaRepository,
-                           UsuarioRepository usuarioRepository, TransacaoRepository transacaoRepository,
-                           PasswordEncoder encoder) {
+                           UsuarioRepository usuarioRepository, PasswordEncoder encoder) {
         this.instituicaoRepository = instituicaoRepository;
         this.professorRepository = professorRepository;
         this.alunoRepository = alunoRepository;
         this.empresaRepository = empresaRepository;
         this.usuarioRepository = usuarioRepository;
-        this.transacaoRepository = transacaoRepository;
         this.encoder = encoder;
     }
 
@@ -59,19 +55,18 @@ public class DataInitializer implements CommandLineRunner {
         }
 
         InstituicaoEnsino puc = instituicaoRepository.save(new InstituicaoEnsino("PUC Minas", "93786579000140"));
-        instituicaoRepository.save(new InstituicaoEnsino("UFMG", "75432319000195"));
+        InstituicaoEnsino ufmg = instituicaoRepository.save(new InstituicaoEnsino("UFMG", "75432319000195"));
         instituicaoRepository.save(new InstituicaoEnsino("CEFET-MG", "48757491000146"));
 
         Administrador admin = new Administrador();
         acesso(admin, "Administrador", "admin@moedaestudantil.com", "admin");
         usuarioRepository.save(admin);
 
-        Professor p1 = professor("Carla Mendes", "carla.mendes@pucminas.br", "carla.mendes",
+        // as 1.000 moedas do semestre são creditadas pelo CreditoSemestralService logo após o start
+        professor("Carla Mendes", "carla.mendes@pucminas.br", "carla.mendes",
                 "08301661305", "Engenharia de Software", puc);
-        Professor p2 = professor("Ricardo Alves", "ricardo.alves@pucminas.br", "ricardo.alves",
+        professor("Ricardo Alves", "ricardo.alves@pucminas.br", "ricardo.alves",
                 "18609139034", "Ciência da Computação", puc);
-        creditarSemestre(p1);
-        creditarSemestre(p2);
 
         Aluno aluno = new Aluno();
         acesso(aluno, "Ana Souza", "ana.souza@email.com", "ana.souza");
@@ -82,6 +77,13 @@ public class DataInitializer implements CommandLineRunner {
         aluno.setEndereco(new Endereco("Rua Dom José Gaspar", "500", "Prédio 34", "Coração Eucarístico",
                 "Belo Horizonte", "MG", "30535901"));
         alunoRepository.save(aluno);
+
+        alunoRepository.save(alunoExemplo("Lucas Pereira", "lucas.pereira@email.com", "lucas.pereira", "62819482112",
+                "MG2345678", "Ciência da Computação", puc,
+                new Endereco("Av. Amazonas", "1200", null, "Centro", "Belo Horizonte", "MG", "30180001")));
+        alunoRepository.save(alunoExemplo("Marina Costa", "marina.costa@email.com", "marina.costa", "99351819019",
+                "MG3456789", "Engenharia Civil", ufmg,
+                new Endereco("Av. Antônio Carlos", "6627", "Apto 101", "Pampulha", "Belo Horizonte", "MG", "31270901")));
 
         EmpresaParceira cantina = new EmpresaParceira();
         acesso(cantina, "Cantina do Campus", "contato@cantinadocampus.com", "cantina");
@@ -119,13 +121,16 @@ public class DataInitializer implements CommandLineRunner {
         return professorRepository.save(p);
     }
 
-    private void creditarSemestre(Professor professor) {
-        professor.creditarSemestre(Professor.CREDITO_SEMESTRAL);
-        CreditoSemestral credito = new CreditoSemestral();
-        credito.setProfessor(professor);
-        credito.setSemestre("2026/2");
-        credito.setValor(Professor.CREDITO_SEMESTRAL);
-        transacaoRepository.save(credito);
+    private Aluno alunoExemplo(String nome, String email, String login, String cpf, String rg, String curso,
+                               InstituicaoEnsino instituicao, Endereco endereco) {
+        Aluno a = new Aluno();
+        acesso(a, nome, email, login);
+        a.setCpf(cpf);
+        a.setRg(rg);
+        a.setCurso(curso);
+        a.setInstituicao(instituicao);
+        a.setEndereco(endereco);
+        return a;
     }
 
     private Vantagem vantagem(String nome, String descricao, String fotoUrl, int custo) {

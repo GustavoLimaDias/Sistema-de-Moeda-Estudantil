@@ -16,6 +16,11 @@ import java.util.List;
 @PrimaryKeyJoinColumn(name = "usuario_id")
 public class EmpresaParceira extends Usuario {
 
+    @Override
+    public Perfil getPerfil() {
+        return Perfil.EMPRESA;
+    }
+
     @Column(nullable = false, unique = true, length = 14)
     private String cnpj;
 

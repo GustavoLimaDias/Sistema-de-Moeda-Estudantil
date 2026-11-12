@@ -1,0 +1,120 @@
+@startuml componentes
+skinparam shadowing false
+skinparam defaultFontName Helvetica
+skinparam defaultFontSize 12
+skinparam componentStyle uml2
+skinparam linetype ortho
+skinparam nodesep 30
+skinparam ranksep 55
+skinparam ArrowColor #404040
+skinparam component {
+  BorderColor #2F5597
+  BackgroundColor #EEF3FB
+  BackgroundColor<<View>> #E8F5E9
+  BorderColor<<View>> #2E7D32
+  BackgroundColor<<Controller>> #FFF4E0
+  BorderColor<<Controller>> #B26A00
+  BackgroundColor<<Segurança>> #FDECEA
+  BorderColor<<Segurança>> #C0392B
+  BackgroundColor<<Repository>> #F3E8FA
+  BorderColor<<Repository>> #6A1B9A
+  BackgroundColor<<Infra>> #F2F2F2
+  BorderColor<<Infra>> #555555
+}
+skinparam database {
+  BackgroundColor #F3E8FA
+  BorderColor #6A1B9A
+}
+skinparam cloud {
+  BackgroundColor #F2F2F2
+  BorderColor #555555
+}
+
+component "Front-end Web (HTML/CSS/JS)\nlogin · cadastro · aluno · professor · empresa · admin\napi.js → fetch API REST + token Bearer" as VIEW <<View>>
+component "AutenticacaoInterceptor\nTokenService\n(@Publico / @RequerPerfil)" as SEC <<Segurança>>
+
+component "AuthController\n/api/auth" as CAuth <<Controller>>
+component "AlunoController\n/api/alunos" as CAluno <<Controller>>
+component "ProfessorController\n/api/professores" as CProf <<Controller>>
+component "EmpresaParceiraController\nVantagemController" as CEmp <<Controller>>
+component "InstituicaoController\nAdminController" as CAdm <<Controller>>
+
+component "AutenticacaoService" as SAuth <<Service>>
+component "AlunoService\nProfessorService\nEmpresaParceiraService\nUsuarioService" as SCad <<Service>>
+component "TransacaoService\n(envio, resgate, extrato, cupom)" as STrans <<Service>>
+component "VantagemService" as SVant <<Service>>
+component "InstituicaoService\nCreditoSemestralService" as SAdm <<Service>>
+component "NotificacaoService\n(@TransactionalEventListener)" as SNot <<Service>>
+component "Agendador Spring\n@Scheduled (1º/jan e 1º/jul)" as Sched <<Infra>>
+
+component "UsuarioRepository\nAlunoRepository · ProfessorRepository\nEmpresaParceiraRepository" as RUsu <<Repository>>
+component "TransferenciaMoedaRepository\nResgateVantagemRepository\nCreditoSemestralRepository" as RTrans <<Repository>>
+component "VantagemRepository" as RVant <<Repository>>
+component "InstituicaoEnsinoRepository" as RInst <<Repository>>
+component "NotificacaoEmailRepository" as RNot <<Repository>>
+
+database "H2 / PostgreSQL\nJPA · Hibernate (ORM)" as DB
+cloud "Servidor SMTP\n(opcional)" as SMTP
+
+VIEW -down-> SEC : HTTP/JSON
+SEC -down-> CAuth
+SEC -down-> CAluno
+SEC -down-> CProf
+SEC -down-> CEmp
+SEC -down-> CAdm
+
+CAuth -[hidden]right- CAluno
+CAluno -[hidden]right- CProf
+CProf -[hidden]right- CEmp
+CEmp -[hidden]right- CAdm
+
+CAuth -down-> SAuth
+CAluno -down-> SCad
+CAluno -down-> STrans
+CProf -down-> STrans
+CEmp -down-> SVant
+CAdm -down-> SAdm
+Sched -down-> SAdm
+
+SAuth -[hidden]right- SCad
+SCad -[hidden]right- STrans
+SNot -[hidden]right- SVant
+SVant -[hidden]right- SAdm
+
+STrans .right.> SNot : evento
+SNot -down-> SMTP
+
+SAuth -down-> RUsu
+SCad -down-> RUsu
+STrans -down-> RTrans
+SVant -down-> RVant
+SAdm -down-> RInst
+SNot -down-> RNot
+
+RUsu -[hidden]right- RTrans
+RTrans -[hidden]right- RNot
+RNot -[hidden]right- RVant
+RVant -[hidden]right- RInst
+
+RUsu -down-> DB
+RTrans -down-> DB
+RVant -down-> DB
+RInst -down-> DB
+RNot -down-> DB
+
+note right of DB
+  Emails do usuário e do administrador são
+  consultados por AuthController e AdminController
+  via NotificacaoService (somente leitura).
+end note
+
+legend right
+  |= Cor |= Camada |
+  |<#E8F5E9>      | View |
+  |<#FDECEA>      | Segurança (autenticação/autorização) |
+  |<#FFF4E0>      | Controller |
+  |<#EEF3FB>      | Model – Serviços (regras de negócio) |
+  |<#F3E8FA>      | Model – Persistência (Repository/DAO + ORM) |
+  |<#F2F2F2>      | Infraestrutura / externos |
+endlegend
+@enduml

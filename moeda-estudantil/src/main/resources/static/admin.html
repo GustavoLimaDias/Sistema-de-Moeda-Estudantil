@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Administração · Moeda Estudantil</title>
+  <link rel="stylesheet" href="/css/app.css">
+</head>
+<body>
+<header id="topo"></header>
+<main class="conteudo">
+  <div class="cabecalho"><div><h1>Professores e instituições</h1><p>Pré-cadastros feitos a partir das listas enviadas pelas instituições parceiras.</p></div></div>
+  <div class="abas">
+    <button type="button" data-aba="professores">Professores</button>
+    <button type="button" data-aba="instituicoes">Instituições</button>
+    <button type="button" data-aba="credito">Crédito semestral</button>
+    <button type="button" data-aba="emails">Emails enviados</button>
+  </div>
+
+  <section class="aba" id="aba-professores">
+    <div class="duas-colunas">
+      <section class="cartao">
+        <div class="barra"><strong>Professores cadastrados</strong><span class="contagem" id="contagem-prof"></span></div>
+        <div class="tabela-wrap"><table>
+          <thead><tr><th>Professor</th><th class="ocultar-mobile">Instituição / departamento</th><th>Saldo</th></tr></thead>
+          <tbody id="tabela-prof"></tbody>
+        </table></div>
+      </section>
+      <div style="display:flex;flex-direction:column;gap:18px">
+        <form class="cartao painel" id="form-prof" novalidate>
+          <h3>Cadastrar professor</h3>
+          <p class="sub">Sem senha, a senha inicial é o CPF (só números).</p>
+          <div class="alerta" hidden></div>
+          <div class="grade">
+            <div class="campo c6"><label>Nome</label><input name="nome" maxlength="120"><div class="msg-erro"></div></div>
+            <div class="campo c3"><label>CPF</label><input name="cpf" data-mascara="cpf" placeholder="000.000.000-00"><div class="msg-erro"></div></div>
+            <div class="campo c3"><label>Login</label><input name="login" maxlength="60"><div class="msg-erro"></div></div>
+            <div class="campo c6"><label>Email</label><input name="email" type="email" maxlength="120"><div class="msg-erro"></div></div>
+            <div class="campo c3"><label>Instituição</label><select name="instituicaoId" data-instituicoes></select><div class="msg-erro"></div></div>
+            <div class="campo c3"><label>Departamento</label><input name="departamento" maxlength="100"><div class="msg-erro"></div></div>
+          </div>
+          <div class="acoes"><button class="btn" type="submit">Cadastrar</button></div>
+        </form>
+        <form class="cartao painel" id="form-import" novalidate>
+          <h3>Importar lista da instituição</h3>
+          <p class="sub">Uma linha por professor: <code>nome;email;cpf;departamento;login</code>. Ou todos entram, ou nenhum.</p>
+          <div class="alerta" hidden></div>
+          <div class="campo"><label>Instituição</label><select name="instituicaoId" data-instituicoes></select><div class="msg-erro"></div></div>
+          <div class="campo"><label>Lista</label><textarea name="lista" rows="5" placeholder="Paula Rocha;paula.rocha@pucminas.br;663.923.321-54;Matemática;paula.rocha"></textarea><div class="msg-erro"></div></div>
+          <div class="acoes"><button class="btn" type="submit">Importar</button></div>
+        </form>
+      </div>
+    </div>
+  </section>
+
+  <section class="aba" id="aba-instituicoes" hidden>
+    <div class="duas-colunas">
+      <section class="cartao">
+        <div class="tabela-wrap"><table>
+          <thead><tr><th>Instituição</th><th>CNPJ</th><th></th></tr></thead>
+          <tbody id="tabela-inst"></tbody>
+        </table></div>
+      </section>
+      <form class="cartao painel" id="form-inst" novalidate>
+        <h3 id="titulo-inst">Nova instituição</h3>
+        <p class="sub">Instituições aparecem na lista do cadastro de aluno.</p>
+        <div class="alerta" hidden></div>
+        <div class="campo"><label>Nome</label><input name="nome" maxlength="150"><div class="msg-erro"></div></div>
+        <div class="campo"><label>CNPJ</label><input name="cnpj" data-mascara="cnpj" placeholder="00.000.000/0000-00"><div class="msg-erro"></div></div>
+        <div class="acoes"><button type="button" class="btn secundario" id="cancelar-inst" hidden>Cancelar edição</button><button class="btn" type="submit">Salvar</button></div>
+      </form>
+    </div>
+  </section>
+
+  <section class="aba" id="aba-credito" hidden>
+    <div class="cartao painel" style="max-width:640px">
+      <h3>Crédito de 1.000 moedas por semestre</h3>
+      <p class="sub">O agendador credita automaticamente cada professor às 00:05 de 1º de janeiro e de 1º de julho, e também quando o servidor inicia. O valor é somado ao saldo atual (acumulativo) e cada professor recebe só um crédito por semestre.</p>
+      <div class="acoes" style="justify-content:flex-start"><button class="btn" id="creditar">Executar agora para o semestre atual</button></div>
+      <div class="aviso" id="resultado-credito" hidden style="margin:14px 0 0"></div>
+    </div>
+  </section>
+
+  <section class="aba" id="aba-emails" hidden>
+    <div class="aviso">Últimos 100 emails disparados. Sem SMTP configurado, os emails ficam no modo <b>simulado</b>: são registrados aqui e na caixa de entrada de cada usuário.</div>
+    <div id="emails"></div>
+  </section>
+</main>
+<script src="/js/api.js"></script>
+<script src="/js/layout.js"></script>
+<script src="/js/forms.js"></script>
+<script src="/js/componentes.js"></script>
+<script src="/js/admin.js"></script>
+</body>
+</html>

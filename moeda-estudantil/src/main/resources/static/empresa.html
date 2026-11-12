@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Área da empresa · Moeda Estudantil</title>
+  <link rel="stylesheet" href="/css/app.css">
+</head>
+<body>
+<header id="topo"></header>
+<main class="conteudo">
+  <div class="resumo">
+    <div class="cartao indicador"><div class="rotulo">Vantagens ativas</div><div class="valor" id="ativas">–</div><div class="sub" id="total-vantagens"></div></div>
+    <div class="cartao indicador"><div class="rotulo">Cupons a conferir</div><div class="valor" id="pendentes">–</div><div class="sub">resgates aguardando a troca presencial</div></div>
+    <div class="cartao indicador"><div class="rotulo">Trocas realizadas</div><div class="valor" id="conferidos">–</div><div class="sub" id="moedas-trocadas"></div></div>
+  </div>
+
+  <div class="abas">
+    <button type="button" data-aba="vantagens">Minhas vantagens</button>
+    <button type="button" data-aba="resgates">Resgates e cupons</button>
+    <button type="button" data-aba="emails">Emails</button>
+    <button type="button" data-aba="perfil">Dados da empresa</button>
+  </div>
+
+  <section class="aba" id="aba-vantagens"><div class="bloco-vantagens" id="editor"></div></section>
+
+  <section class="aba" id="aba-resgates" hidden>
+    <form class="cartao painel" id="form-conferir" novalidate style="margin-bottom:18px">
+      <h3>Conferir cupom</h3>
+      <p class="sub">Digite o código que o aluno apresentou para validar a troca.</p>
+      <div class="campo" style="margin-bottom:0">
+        <div class="conferir"><input name="codigo" maxlength="12" placeholder="Ex.: 3F9A1C0B7E2D"><button class="btn" type="submit">Conferir</button></div>
+        <div class="msg-erro"></div>
+      </div>
+    </form>
+    <section class="cartao"><div id="resgates"></div></section>
+  </section>
+
+  <section class="aba" id="aba-emails" hidden>
+    <div class="aviso">Cópia dos emails de aviso de resgate enviados para a empresa.</div>
+    <div id="emails"></div>
+  </section>
+
+  <section class="aba cartao painel" id="aba-perfil" hidden>
+    <form id="form-perfil" novalidate>
+      <div class="alerta" hidden></div>
+      <div data-campos></div>
+      <div class="acoes" style="justify-content:space-between">
+        <button type="button" class="btn secundario" id="excluir-conta">Excluir conta da empresa</button>
+        <button type="submit" class="btn">Salvar alterações</button>
+      </div>
+    </form>
+  </section>
+</main>
+<script src="/js/api.js"></script>
+<script src="/js/layout.js"></script>
+<script src="/js/forms.js"></script>
+<script src="/js/componentes.js"></script>
+<script src="/js/vantagens-editor.js"></script>
+<script src="/js/empresa.js"></script>
+</body>
+</html>

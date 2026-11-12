@@ -9,4 +9,9 @@ import jakarta.persistence.Table;
 @Table(name = "administrador")
 @PrimaryKeyJoinColumn(name = "usuario_id")
 public class Administrador extends Usuario {
+
+    @Override
+    public Perfil getPerfil() {
+        return Perfil.ADMIN;
+    }
 }

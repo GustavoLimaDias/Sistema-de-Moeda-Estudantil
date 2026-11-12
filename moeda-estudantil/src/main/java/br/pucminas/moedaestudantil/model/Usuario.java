@@ -36,6 +36,9 @@ public abstract class Usuario {
     @Column(name = "senha_hash", nullable = false, length = 100)
     private String senhaHash;
 
+    /** Perfil de acesso definido por cada subclasse. */
+    public abstract Perfil getPerfil();
+
     public boolean autenticar(String login, String senha, PasswordEncoder encoder) {
         return this.login.equals(login) && encoder.matches(senha, this.senhaHash);
     }

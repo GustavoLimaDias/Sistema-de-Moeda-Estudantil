@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Empresas parceiras · Moeda Estudantil</title>
+  <link rel="stylesheet" href="/css/app.css">
+</head>
+<body>
+<header id="topo"></header>
+<main class="conteudo">
+  <div class="cabecalho">
+    <div><h1>Empresas parceiras</h1><p>Empresas cadastradas e as vantagens que oferecem aos alunos.</p></div>
+    <button class="btn" id="novo">+ Nova empresa</button>
+  </div>
+  <section class="cartao">
+    <div class="barra">
+      <input class="busca" id="busca" type="search" placeholder="Buscar por nome, email ou CNPJ">
+      <span class="contagem" id="contagem"></span>
+    </div>
+    <div class="tabela-wrap">
+    <table>
+      <thead><tr><th>Empresa</th><th class="ocultar-mobile">CNPJ</th><th>Vantagens</th><th></th></tr></thead>
+      <tbody id="tabela"></tbody>
+    </table>
+    </div>
+    <div class="vazio" id="vazio" hidden>Nenhuma empresa encontrada.</div>
+  </section>
+</main>
+<dialog id="modal">
+  <form id="form" novalidate>
+    <div class="modal-topo"><h2 id="titulo">Nova empresa</h2><button type="button" class="fechar" data-fechar aria-label="Fechar">×</button></div>
+    <div class="modal-corpo"><div class="alerta" hidden></div><div data-campos></div></div>
+    <div class="modal-rodape"><button type="button" class="btn secundario" data-fechar>Cancelar</button><button type="submit" class="btn" id="salvar">Salvar</button></div>
+  </form>
+</dialog>
+<dialog id="modal-vantagens">
+  <div class="modal-topo"><h2 id="titulo-vantagens">Vantagens</h2><button type="button" class="fechar" data-fechar aria-label="Fechar">×</button></div>
+  <div class="modal-corpo"><div class="bloco-vantagens" id="editor"></div></div>
+</dialog>
+<script src="/js/api.js"></script>
+<script src="/js/layout.js"></script>
+<script src="/js/forms.js"></script>
+<script src="/js/vantagens-editor.js"></script>
+<script src="/js/admin-empresas.js"></script>
+</body>
+</html>

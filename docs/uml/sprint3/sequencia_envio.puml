@@ -1,0 +1,48 @@
+@startuml sequencia_envio
+skinparam shadowing false
+skinparam defaultFontName Helvetica
+skinparam defaultFontSize 12
+skinparam sequenceMessageAlign center
+skinparam ParticipantBorderColor #2F5597
+skinparam ParticipantBackgroundColor #EEF3FB
+skinparam ActorBorderColor #2F5597
+skinparam ActorBackgroundColor #EEF3FB
+skinparam DatabaseBorderColor #6A1B9A
+skinparam DatabaseBackgroundColor #F3E8FA
+skinparam SequenceLifeLineBorderColor #9E9E9E
+skinparam NoteBackgroundColor #FFFDE7
+skinparam NoteBorderColor #C9B458
+hide footbox
+title Envio de moedas (UC05 + UC06)
+
+actor Professor
+participant "professor.js" as V
+participant "ProfessorController" as C
+participant "TransacaoService" as S
+participant "ProfessorRepository\nAlunoRepository\nTransferenciaMoedaRepository" as R
+database "Banco" as DB
+participant "NotificacaoService" as N
+actor Aluno
+
+Professor -> V : escolhe aluno, valor e motivo
+V -> C : POST /api/professores/me/envios
+note right of C : @Valid: motivo obrigatório,\nvalor > 0 (senão 400)
+C -> S : enviarMoedas(professorId, request)
+activate S
+S -> R : bloqueia professor e aluno (FOR UPDATE)
+R -> DB
+alt aluno de outra instituição ou saldo insuficiente
+  S --> C : RegraNegocioException → 422
+else envio válido
+  S -> S : professor.debitarMoedas(valor)\naluno.receberMoedas(valor)
+  S -> R : save(TransferenciaMoeda)
+  S -> S : publishEvent(MoedasEnviadasEvent)
+  note over S, DB : COMMIT da transação
+  S -> N : evento (AFTER_COMMIT)
+  N -> DB : registra email
+  N ->> Aluno : "Você recebeu N moedas!" (SMTP)
+  S --> C : TransferenciaResponse
+  deactivate S
+  C --> V : 201 Created (novo saldo)
+end
+@enduml

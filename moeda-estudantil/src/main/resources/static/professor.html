@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Área do professor · Moeda Estudantil</title>
+  <link rel="stylesheet" href="/css/app.css">
+</head>
+<body>
+<header id="topo"></header>
+<main class="conteudo">
+  <div class="resumo">
+    <div class="cartao indicador saldo"><div class="rotulo">Saldo para distribuir</div><div class="valor"><span class="moeda">M</span><span id="saldo">–</span></div><div class="sub">+1.000 moedas a cada semestre (acumulativo)</div></div>
+    <div class="cartao indicador"><div class="rotulo">Moedas enviadas</div><div class="valor" id="enviadas">–</div><div class="sub" id="qtd-envios"></div></div>
+    <div class="cartao indicador"><div class="rotulo">Alunos reconhecidos</div><div class="valor" id="alunos-reconhecidos">–</div><div class="sub" id="qtd-alunos"></div></div>
+  </div>
+
+  <div class="abas">
+    <button type="button" data-aba="enviar">Enviar moedas</button>
+    <button type="button" data-aba="extrato">Extrato</button>
+  </div>
+
+  <section class="aba" id="aba-enviar">
+    <div class="duas-colunas">
+      <form class="cartao painel" id="form-envio" novalidate>
+        <h3>Reconhecer um aluno</h3>
+        <p class="sub">O aluno recebe as moedas na hora e é avisado por email.</p>
+        <div class="alerta" hidden></div>
+        <div class="campo"><label for="aluno">Aluno</label><select id="aluno" name="alunoId"></select><div class="msg-erro"></div></div>
+        <div class="campo"><label for="valor">Quantidade de moedas</label><input id="valor" name="valor" type="number" min="1" step="1" placeholder="Ex.: 50"><div class="dica" id="dica-valor"></div><div class="msg-erro"></div></div>
+        <div class="campo"><label for="motivo">Motivo do reconhecimento</label><textarea id="motivo" name="motivo" maxlength="500" placeholder="Ex.: Excelente participação na aula de hoje"></textarea><div class="msg-erro"></div></div>
+        <button type="submit" class="btn" id="enviar">Enviar moedas</button>
+      </form>
+      <div class="cartao painel">
+        <h3>Últimos envios</h3>
+        <p class="sub">Os cinco reconhecimentos mais recentes.</p>
+        <ul class="lista-simples" id="ultimos"></ul>
+      </div>
+    </div>
+  </section>
+  <section class="aba cartao" id="aba-extrato" hidden><div id="extrato"></div></section>
+</main>
+<script src="/js/api.js"></script>
+<script src="/js/layout.js"></script>
+<script src="/js/componentes.js"></script>
+<script src="/js/professor.js"></script>
+</body>
+</html>

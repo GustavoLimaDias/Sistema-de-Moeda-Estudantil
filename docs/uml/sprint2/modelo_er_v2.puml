@@ -1,0 +1,138 @@
+@startuml modelo_er
+skinparam shadowing false
+skinparam defaultFontName Helvetica
+skinparam defaultFontSize 12
+skinparam linetype ortho
+skinparam nodesep 55
+skinparam ranksep 75
+skinparam ArrowColor #404040
+skinparam class {
+  BackgroundColor #FFFFFF
+  BorderColor #2F5597
+  HeaderBackgroundColor #D6E2F5
+}
+hide circle
+hide methods
+hide stereotype
+
+!define PK(x) <b><color:#B26A00>PK</color> x</b>
+!define FK(x) <color:#6A1B9A>FK</color> x
+!define PFK(x) <b><color:#B26A00>PK</color></b> <color:#6A1B9A>FK</color> <b>x</b>
+!define UK(x) <color:#2E7D32>UK</color> x
+
+entity "usuario" as usuario {
+  PK(id) : BIGINT
+  --
+  nome : VARCHAR(120)
+  UK(email) : VARCHAR(120)
+  UK(login) : VARCHAR(60)
+  senha_hash : VARCHAR(100)
+}
+
+entity "administrador" as administrador {
+  PFK(usuario_id) : BIGINT
+}
+
+entity "empresa_parceira" as empresa {
+  PFK(usuario_id) : BIGINT
+  --
+  UK(cnpj) : CHAR(14)
+  descricao : VARCHAR(500)
+}
+
+entity "aluno" as aluno {
+  PFK(usuario_id) : BIGINT
+  --
+  UK(cpf) : CHAR(11)
+  rg : VARCHAR(20)
+  curso : VARCHAR(100)
+  saldo : INT
+  logradouro : VARCHAR(150)
+  numero : VARCHAR(10)
+  complemento : VARCHAR(60)
+  bairro : VARCHAR(80)
+  cidade : VARCHAR(80)
+  uf : CHAR(2)
+  cep : CHAR(8)
+  FK(instituicao_id) : BIGINT
+}
+
+entity "professor" as professor {
+  PFK(usuario_id) : BIGINT
+  --
+  UK(cpf) : CHAR(11)
+  departamento : VARCHAR(100)
+  saldo : INT
+  FK(instituicao_id) : BIGINT
+}
+
+entity "instituicao_ensino" as instituicao {
+  PK(id) : BIGINT
+  --
+  nome : VARCHAR(150)
+  UK(cnpj) : CHAR(14)
+}
+
+entity "vantagem" as vantagem {
+  PK(id) : BIGINT
+  --
+  nome : VARCHAR(120)
+  descricao : VARCHAR(1000)
+  foto_url : VARCHAR(500)
+  custo : INT
+  ativa : BOOLEAN
+  FK(empresa_id) : BIGINT
+}
+
+entity "resgate_vantagem" as resgate {
+  PFK(transacao_id) : BIGINT
+  --
+  UK(codigo_cupom) : VARCHAR(12)
+  status : VARCHAR(20)
+  FK(aluno_id) : BIGINT
+  FK(vantagem_id) : BIGINT
+}
+
+entity "transferencia_moeda" as transf {
+  PFK(transacao_id) : BIGINT
+  --
+  motivo : VARCHAR(500)
+  FK(professor_id) : BIGINT
+  FK(aluno_id) : BIGINT
+}
+
+entity "credito_semestral" as credito {
+  PFK(transacao_id) : BIGINT
+  --
+  semestre : VARCHAR(6)
+  FK(professor_id) : BIGINT
+  <color:#2E7D32>UK</color> (professor_id, semestre)
+}
+
+entity "transacao" as transacao {
+  PK(id) : BIGINT
+  --
+  data_hora : TIMESTAMP
+  valor : INT
+}
+
+usuario ||-down-o| administrador
+usuario ||-down-o| empresa
+usuario ||-down-o| aluno
+usuario ||-down-o| professor
+
+administrador -[hidden]right- empresa
+aluno }o-right-|| instituicao
+professor }o-left-|| instituicao
+empresa ||-down-o{ vantagem
+
+vantagem ||-right-o{ resgate
+aluno ||-down-o{ resgate
+aluno ||-down-o{ transf
+professor ||-down-o{ transf
+professor ||-down-o{ credito
+
+resgate |o-down-|| transacao
+transf |o-down-|| transacao
+credito |o-down-|| transacao
+@enduml

@@ -1,7 +1,20 @@
 /* Camada de comunicação do front-end com a API REST do back-end. */
+const Sessao = {
+  CHAVE: "moeda.sessao",
+  get() {
+    try { return JSON.parse(localStorage.getItem(Sessao.CHAVE)); } catch (e) { return null; }
+  },
+  salvar(dados) { localStorage.setItem(Sessao.CHAVE, JSON.stringify(dados)); },
+  limpar() { localStorage.removeItem(Sessao.CHAVE); },
+  token() { const s = Sessao.get(); return s ? s.token : null; },
+  usuario() { const s = Sessao.get(); return s ? s.usuario : null; },
+};
+
 const API = (() => {
   async function requisicao(metodo, url, corpo) {
     const opcoes = { method: metodo, headers: { Accept: "application/json" } };
+    const token = Sessao.token();
+    if (token) opcoes.headers.Authorization = "Bearer " + token;
     if (corpo !== undefined) {
       opcoes.headers["Content-Type"] = "application/json";
       opcoes.body = JSON.stringify(corpo);
@@ -11,6 +24,11 @@ const API = (() => {
       resposta = await fetch(url, opcoes);
     } catch (e) {
       throw { status: 0, mensagem: "Não foi possível conectar ao servidor.", campos: {} };
+    }
+    if (resposta.status === 401 && !url.endsWith("/api/auth/login")) {
+      Sessao.limpar();
+      window.location.href = "/index.html?expirou=1";
+      throw { status: 401, mensagem: "Sessão expirada. Faça login novamente.", campos: {} };
     }
     if (resposta.status === 204) return null;
     const dados = await resposta.json().catch(() => null);
@@ -92,10 +110,27 @@ const UI = {
     if (!algumCampo && !alerta) UI.toast(erro.mensagem, "erro");
   },
 
+  dataHora(iso) {
+    if (!iso) return "";
+    const d = new Date(String(iso).slice(0, 23)); // LocalDateTime pode vir com microssegundos
+    return d.toLocaleDateString("pt-BR") + " " + d.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" });
+  },
+
   /** Confirmação sem window.confirm, usando o <dialog id="confirmar">. */
-  confirmar(texto) {
-    const d = document.getElementById("confirmar");
+  confirmar(texto, rotulo = "Excluir") {
+    let d = document.getElementById("confirmar");
+    if (!d) {
+      d = document.createElement("dialog");
+      d.id = "confirmar";
+      d.className = "pequeno";
+      d.innerHTML = `<div class="modal-corpo"><p data-texto style="margin:0"></p></div>
+        <div class="modal-rodape"><button type="button" class="btn secundario" data-nao>Cancelar</button>
+        <button type="button" class="btn perigo" data-sim></button></div>`;
+      document.body.appendChild(d);
+    }
     d.querySelector("[data-texto]").textContent = texto;
+    d.querySelector("[data-sim]").textContent = rotulo;
+    d.querySelector("[data-sim]").className = "btn " + (rotulo === "Excluir" ? "perigo" : "");
     d.showModal();
     return new Promise((resolve) => {
       const fim = (v) => { d.close(); resolve(v); };

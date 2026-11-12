@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Cadastro · Moeda Estudantil</title>
+  <link rel="stylesheet" href="/css/app.css">
+</head>
+<body>
+<main class="pagina-cadastro">
+  <a class="marca" href="/index.html"><span class="moeda">M</span><span>Moeda Estudantil</span></a>
+  <div class="cabecalho"><div><h1>Criar conta</h1><p>Professores são cadastrados pela instituição; aqui se cadastram alunos e empresas parceiras.</p></div></div>
+  <div class="abas">
+    <button type="button" data-aba="aluno">Sou aluno</button>
+    <button type="button" data-aba="empresa">Sou empresa parceira</button>
+  </div>
+  <section class="aba cartao painel" id="aba-aluno">
+    <form id="form-aluno" novalidate>
+      <div class="alerta" hidden></div>
+      <div data-campos></div>
+      <div class="acoes"><a class="btn secundario" href="/index.html">Já tenho conta</a><button class="btn" type="submit">Criar conta de aluno</button></div>
+    </form>
+  </section>
+  <section class="aba cartao painel" id="aba-empresa" hidden>
+    <form id="form-empresa" novalidate>
+      <div class="alerta" hidden></div>
+      <div data-campos></div>
+      <div class="acoes"><a class="btn secundario" href="/index.html">Já tenho conta</a><button class="btn" type="submit">Criar conta de empresa</button></div>
+    </form>
+  </section>
+</main>
+<script src="/js/api.js"></script>
+<script src="/js/layout.js"></script>
+<script src="/js/forms.js"></script>
+<script>
+  (() => {
+    const formAluno = document.getElementById("form-aluno");
+    const formEmpresa = document.getElementById("form-empresa");
+    formAluno.querySelector("[data-campos]").innerHTML = Forms.aluno("a-");
+    formEmpresa.querySelector("[data-campos]").innerHTML = Forms.empresa("e-");
+    Forms.preparar(formAluno).catch((e) => UI.toast(e.mensagem, "erro"));
+    Forms.preparar(formEmpresa);
+    Layout.abas();
+
+    async function criar(form, url, dados) {
+      const botao = form.querySelector("[type=submit]");
+      botao.disabled = true;
+      try {
+        await API.post(url, dados);
+        const sessao = await API.post("/api/auth/login", { login: dados.login, senha: dados.senha });
+        Sessao.salvar(sessao);
+        window.location.href = PAINEIS[sessao.usuario.perfil];
+      } catch (e) {
+        UI.mostrarErros(form, e);
+        form.querySelector(".alerta").scrollIntoView({ behavior: "smooth", block: "center" });
+      } finally {
+        botao.disabled = false;
+      }
+    }
+    formAluno.addEventListener("submit", (ev) => { ev.preventDefault(); criar(formAluno, "/api/alunos", Forms.dadosAluno(formAluno)); });
+    formEmpresa.addEventListener("submit", (ev) => { ev.preventDefault(); criar(formEmpresa, "/api/empresas", lerFormulario(formEmpresa)); });
+  })();
+</script>
+</body>
+</html>

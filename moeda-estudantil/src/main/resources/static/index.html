@@ -3,58 +3,70 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Início · Moeda Estudantil</title>
+  <title>Entrar · Moeda Estudantil</title>
   <link rel="stylesheet" href="/css/app.css">
 </head>
 <body>
-<header class="topo">
-  <div class="conteudo">
-    <a class="marca" href="/index.html"><span class="moeda">M</span><span class="nome">Moeda Estudantil</span></a>
-    <nav class="menu">
-      <a href="/index.html" class="ativo">Início</a>
-      <a href="/alunos.html">Alunos</a>
-      <a href="/empresas.html">Empresas parceiras</a>
-    </nav>
-  </div>
-</header>
-<main class="conteudo">
-  <section class="hero">
-    <h1>Sistema de Moeda Estudantil</h1>
-    <p>Professores reconhecem o mérito dos alunos com moedas, que podem ser trocadas por vantagens oferecidas pelas empresas parceiras.</p>
-  </section>
-  <div class="atalhos">
-    <a class="cartao atalho" href="/alunos.html">
-      <div class="numero" id="qtd-alunos">–</div>
-      <h3>Alunos</h3>
-      <p>Cadastro, consulta, edição e exclusão de alunos.</p>
-      <span class="btn secundario pequeno">Gerenciar alunos →</span>
-    </a>
-    <a class="cartao atalho" href="/empresas.html">
-      <div class="numero" id="qtd-empresas">–</div>
-      <h3>Empresas parceiras</h3>
-      <p>Cadastro de empresas e das vantagens que elas oferecem.</p>
-      <span class="btn secundario pequeno">Gerenciar empresas →</span>
-    </a>
-    <div class="cartao atalho">
-      <div class="numero" id="qtd-instituicoes">–</div>
-      <h3>Instituições</h3>
-      <p id="lista-instituicoes" class="sub">Instituições de ensino pré-cadastradas.</p>
+<div class="entrada">
+  <section class="lado">
+    <a class="marca" href="/index.html"><span class="moeda">M</span><span>Moeda Estudantil</span></a>
+    <h1>Reconhecimento do mérito estudantil em moedas.</h1>
+    <p>Professores premiam a participação dos alunos. Os alunos trocam as moedas por vantagens nas empresas parceiras.</p>
+    <div class="passos">
+      <div class="passo"><span class="n">1</span><div><b>Professores enviam moedas</b><span>1.000 moedas por semestre, sempre com o motivo do reconhecimento.</span></div></div>
+      <div class="passo"><span class="n">2</span><div><b>Alunos acompanham o extrato</b><span>Cada moeda recebida chega também por email.</span></div></div>
+      <div class="passo"><span class="n">3</span><div><b>Trocas com cupom</b><span>O aluno resgata uma vantagem e recebe um código para apresentar na empresa.</span></div></div>
     </div>
-  </div>
-</main>
+  </section>
+  <section class="form-lado">
+    <form class="caixa-login" id="form" novalidate>
+      <h2>Entrar</h2>
+      <p>Use o login e a senha da sua conta.</p>
+      <div class="alerta" hidden></div>
+      <div class="campo"><label for="login">Login</label><input id="login" name="login" autocomplete="username" autofocus><div class="msg-erro"></div></div>
+      <div class="campo"><label for="senha">Senha</label><input id="senha" name="senha" type="password" autocomplete="current-password"><div class="msg-erro"></div></div>
+      <button class="btn grande" id="entrar" type="submit">Entrar</button>
+      <p style="margin:18px 0 0;text-align:center" class="sub">Ainda não tem conta? <a href="/cadastro.html">Cadastre-se como aluno ou empresa parceira</a></p>
+      <div class="demo">
+        <b>Contas de demonstração</b> (senha <code>123456</code>):<br>
+        <button type="button" data-demo="ana.souza">ana.souza</button> aluna ·
+        <button type="button" data-demo="carla.mendes">carla.mendes</button> professora ·
+        <button type="button" data-demo="cantina">cantina</button> empresa ·
+        <button type="button" data-demo="admin">admin</button> administrador
+      </div>
+    </form>
+  </section>
+</div>
 <script src="/js/api.js"></script>
+<script src="/js/layout.js"></script>
 <script>
-  (async () => {
-    try {
-      const [alunos, empresas, insts] = await Promise.all([
-        API.get("/api/alunos"), API.get("/api/empresas"), API.get("/api/instituicoes")]);
-      document.getElementById("qtd-alunos").textContent = alunos.length;
-      document.getElementById("qtd-empresas").textContent = empresas.length;
-      document.getElementById("qtd-instituicoes").textContent = insts.length;
-      document.getElementById("lista-instituicoes").textContent = insts.map((i) => i.nome).join(" · ");
-    } catch (e) {
-      UI.toast(e.mensagem, "erro");
+  (() => {
+    const atual = Sessao.usuario();
+    if (atual) { window.location.replace(PAINEIS[atual.perfil]); return; }
+    const form = document.getElementById("form");
+    UI.limparAoEditar(form);
+    if (new URLSearchParams(location.search).has("expirou")) {
+      UI.mostrarErros(form, { mensagem: "Sua sessão expirou. Entre novamente.", campos: {} });
     }
+    document.querySelectorAll("[data-demo]").forEach((b) => b.addEventListener("click", () => {
+      form.login.value = b.dataset.demo;
+      form.senha.value = "123456";
+      form.requestSubmit();
+    }));
+    form.addEventListener("submit", async (ev) => {
+      ev.preventDefault();
+      const botao = document.getElementById("entrar");
+      botao.disabled = true;
+      try {
+        const resposta = await API.post("/api/auth/login", lerFormulario(form));
+        Sessao.salvar(resposta);
+        window.location.href = PAINEIS[resposta.usuario.perfil];
+      } catch (e) {
+        UI.mostrarErros(form, e);
+      } finally {
+        botao.disabled = false;
+      }
+    });
   })();
 </script>
 </body>

@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Alunos · Moeda Estudantil</title>
+  <link rel="stylesheet" href="/css/app.css">
+</head>
+<body>
+<header id="topo"></header>
+<main class="conteudo">
+  <div class="cabecalho">
+    <div><h1>Alunos</h1><p>Todos os alunos cadastrados no sistema de mérito.</p></div>
+    <button class="btn" id="novo">+ Novo aluno</button>
+  </div>
+  <section class="cartao">
+    <div class="barra">
+      <input class="busca" id="busca" type="search" placeholder="Buscar por nome, email, CPF ou curso">
+      <span class="contagem" id="contagem"></span>
+    </div>
+    <div class="tabela-wrap">
+    <table>
+      <thead><tr><th>Aluno</th><th class="ocultar-mobile">CPF</th><th class="ocultar-mobile">Instituição / curso</th><th>Saldo</th><th></th></tr></thead>
+      <tbody id="tabela"></tbody>
+    </table>
+    </div>
+    <div class="vazio" id="vazio" hidden>Nenhum aluno encontrado.</div>
+  </section>
+</main>
+<dialog id="modal">
+  <form id="form" novalidate>
+    <div class="modal-topo"><h2 id="titulo">Novo aluno</h2><button type="button" class="fechar" data-fechar aria-label="Fechar">×</button></div>
+    <div class="modal-corpo"><div class="alerta" hidden></div><div data-campos></div></div>
+    <div class="modal-rodape"><button type="button" class="btn secundario" data-fechar>Cancelar</button><button type="submit" class="btn" id="salvar">Salvar</button></div>
+  </form>
+</dialog>
+<script src="/js/api.js"></script>
+<script src="/js/layout.js"></script>
+<script src="/js/forms.js"></script>
+<script src="/js/admin-alunos.js"></script>
+</body>
+</html>

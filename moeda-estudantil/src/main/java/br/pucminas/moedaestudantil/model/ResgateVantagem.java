@@ -38,6 +38,14 @@ public class ResgateVantagem extends Transacao {
         return codigoCupom;
     }
 
+    /** Chamado pela empresa parceira ao validar o cupom na troca presencial. */
+    public void conferir() {
+        if (status != StatusResgate.PENDENTE) {
+            throw new IllegalStateException("Este cupom já foi " + status.name().toLowerCase() + ".");
+        }
+        this.status = StatusResgate.CONFERIDO;
+    }
+
     @Override
     public String getDescricao() {
         return "Resgate de " + (vantagem != null ? vantagem.getNome() : "vantagem");

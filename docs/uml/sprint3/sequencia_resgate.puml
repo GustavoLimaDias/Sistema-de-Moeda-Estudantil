@@ -1,0 +1,57 @@
+@startuml sequencia_resgate
+skinparam shadowing false
+skinparam defaultFontName Helvetica
+skinparam defaultFontSize 12
+skinparam sequenceMessageAlign center
+skinparam ParticipantBorderColor #2F5597
+skinparam ParticipantBackgroundColor #EEF3FB
+skinparam ActorBorderColor #2F5597
+skinparam ActorBackgroundColor #EEF3FB
+skinparam DatabaseBorderColor #6A1B9A
+skinparam DatabaseBackgroundColor #F3E8FA
+skinparam SequenceLifeLineBorderColor #9E9E9E
+skinparam NoteBackgroundColor #FFFDE7
+skinparam NoteBorderColor #C9B458
+hide footbox
+title Resgate de vantagem (UC08 + UC09 + UC10)
+
+actor Aluno
+participant "aluno.js" as V
+participant "AutenticacaoInterceptor" as I
+participant "AlunoController" as C
+participant "TransacaoService" as S
+participant "AlunoRepository\nVantagemRepository\nResgateVantagemRepository" as R
+database "Banco" as DB
+participant "NotificacaoService" as N
+
+Aluno -> V : clica em "Resgatar"
+V -> I : POST /api/alunos/me/resgates\nAuthorization: Bearer token
+I -> I : valida token e perfil ALUNO
+I -> C : resgatar(vantagemId, sessão)
+C -> S : resgatarVantagem(alunoId, vantagemId)
+activate S
+note right of S : @Transactional
+S -> R : findParaAtualizarSaldo(alunoId)
+R -> DB : SELECT … FOR UPDATE
+S -> R : findWithEmpresaById(vantagemId)
+alt vantagem inativa ou saldo insuficiente
+  S --> C : RegraNegocioException
+  C --> V : 422 { mensagem, campos }
+else resgate válido
+  S -> S : aluno.debitarMoedas(custo)\nresgate.gerarCodigo()
+  S -> R : save(resgate)
+  S -> S : publishEvent(VantagemResgatadaEvent)
+  note over S, DB : COMMIT da transação
+  S -> N : evento (AFTER_COMMIT)
+  activate N
+  note right of N : nova transação\n(REQUIRES_NEW)
+  N -> DB : registra email de cupom (aluno)
+  N -> DB : registra email de conferência (empresa)
+  N ->> N : envia via SMTP, se configurado
+  deactivate N
+  S --> C : ResgateResponse (código do cupom)
+  deactivate S
+  C --> V : 201 Created
+  V --> Aluno : exibe o cupom
+end
+@enduml

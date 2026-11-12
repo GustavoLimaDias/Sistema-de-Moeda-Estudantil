@@ -1,6 +1,6 @@
 -- =====================================================================
 -- Sistema de Moeda Estudantil - Modelo físico (PostgreSQL)
--- Lab03S02 - Projeto de Software - PUC Minas
+-- Lab03S03 (versão final) - Projeto de Software - PUC Minas
 --
 -- Esquema equivalente ao gerado pelo Hibernate a partir das entidades JPA
 -- (spring.jpa.hibernate.ddl-auto=update). As restrições CHECK documentam
@@ -96,6 +96,16 @@ CREATE TABLE credito_semestral (
     CONSTRAINT uk_credito_professor_semestre UNIQUE (professor_id, semestre)
 );
 
+-- Registro dos emails disparados (moedas recebidas, cupom do aluno e aviso à empresa)
+CREATE TABLE notificacao_email (
+    id            BIGSERIAL     PRIMARY KEY,
+    destinatario  VARCHAR(120)  NOT NULL,
+    assunto       VARCHAR(200)  NOT NULL,
+    corpo         VARCHAR(4000) NOT NULL,
+    data_hora     TIMESTAMP     NOT NULL,
+    status        VARCHAR(20)   NOT NULL CHECK (status IN ('ENVIADO', 'SIMULADO', 'FALHOU'))
+);
+
 -- Índices para as consultas mais frequentes (listas e extratos)
 CREATE INDEX idx_aluno_instituicao        ON aluno (instituicao_id);
 CREATE INDEX idx_professor_instituicao    ON professor (instituicao_id);
@@ -103,3 +113,5 @@ CREATE INDEX idx_vantagem_empresa         ON vantagem (empresa_id);
 CREATE INDEX idx_transferencia_aluno      ON transferencia_moeda (aluno_id);
 CREATE INDEX idx_transferencia_professor  ON transferencia_moeda (professor_id);
 CREATE INDEX idx_resgate_aluno            ON resgate_vantagem (aluno_id);
+CREATE INDEX idx_resgate_vantagem         ON resgate_vantagem (vantagem_id);
+CREATE INDEX idx_email_destinatario       ON notificacao_email (destinatario);

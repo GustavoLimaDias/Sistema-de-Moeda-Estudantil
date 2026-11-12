@@ -1,10 +1,13 @@
 package br.pucminas.moedaestudantil.service;
 
+import br.pucminas.moedaestudantil.dto.CatalogoVantagemResponse;
 import br.pucminas.moedaestudantil.dto.VantagemRequest;
 import br.pucminas.moedaestudantil.dto.VantagemResponse;
 import br.pucminas.moedaestudantil.exception.RecursoNaoEncontradoException;
+import br.pucminas.moedaestudantil.exception.RegraNegocioException;
 import br.pucminas.moedaestudantil.model.EmpresaParceira;
 import br.pucminas.moedaestudantil.model.Vantagem;
+import br.pucminas.moedaestudantil.repository.ResgateVantagemRepository;
 import br.pucminas.moedaestudantil.repository.VantagemRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -18,10 +21,20 @@ public class VantagemService {
 
     private final VantagemRepository vantagemRepository;
     private final EmpresaParceiraService empresaService;
+    private final ResgateVantagemRepository resgateRepository;
 
-    public VantagemService(VantagemRepository vantagemRepository, EmpresaParceiraService empresaService) {
+    public VantagemService(VantagemRepository vantagemRepository, EmpresaParceiraService empresaService,
+                           ResgateVantagemRepository resgateRepository) {
         this.vantagemRepository = vantagemRepository;
         this.empresaService = empresaService;
+        this.resgateRepository = resgateRepository;
+    }
+
+    /** UC07 – catálogo de vantagens ativas de todas as empresas, do menor para o maior custo. */
+    @Transactional(readOnly = true)
+    public List<CatalogoVantagemResponse> catalogo() {
+        return vantagemRepository.findByAtivaTrueOrderByCustoAsc().stream()
+                .map(CatalogoVantagemResponse::from).toList();
     }
 
     @Transactional(readOnly = true)
@@ -47,6 +60,9 @@ public class VantagemService {
 
     public void excluir(Long empresaId, Long vantagemId) {
         Vantagem vantagem = buscarEntidade(empresaId, vantagemId);
+        if (resgateRepository.existsByVantagemId(vantagemId)) {
+            throw new RegraNegocioException("Esta vantagem já foi resgatada por alunos. Desative-a em vez de excluir.");
+        }
         vantagem.getEmpresa().removerVantagem(vantagem);
         vantagemRepository.delete(vantagem);
         vantagemRepository.flush();

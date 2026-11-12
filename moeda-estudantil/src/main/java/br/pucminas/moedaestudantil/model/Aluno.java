@@ -14,6 +14,11 @@ import jakarta.persistence.Table;
 @PrimaryKeyJoinColumn(name = "usuario_id")
 public class Aluno extends Usuario {
 
+    @Override
+    public Perfil getPerfil() {
+        return Perfil.ALUNO;
+    }
+
     @Column(nullable = false, unique = true, length = 11)
     private String cpf;
 
