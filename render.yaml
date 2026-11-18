@@ -4,6 +4,8 @@ databases:
     databaseName: moeda_estudantil
     plan: free
     region: oregon
+    # só a rede privada do Render (a API usa a connectionString interna); sem acesso externo
+    ipAllowList: []
 
 services:
   - type: web
