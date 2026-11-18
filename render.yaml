@@ -32,4 +32,4 @@ services:
           name: moeda-estudantil-db
           property: password
       - key: CORS_ALLOWED_ORIGINS
-        value: https://*.vercel.app
+        value: https://moeda-estudantil-phi.vercel.app
