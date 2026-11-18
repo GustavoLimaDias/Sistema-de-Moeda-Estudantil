@@ -44,8 +44,8 @@ Modelagem em `docs/uml/release2`: casos de uso v2, 14 diagramas de sequência (`
 
 | | URL |
 |---|---|
-| Sistema (front-end, Vercel) | _a definir_ |
-| API (back-end, Render) | _a definir_ (`/api/health` → `{"status":"UP"}`) |
+| Sistema (front-end, Vercel) | https://moeda-estudantil-phi.vercel.app |
+| API (back-end, Render) | https://moeda-estudantil-api-zj8w.onrender.com/api/health → `{"status":"UP"}` |
 
 O front-end é o mesmo de `src/main/resources/static`: o Vercel publica essa pasta e o `vercel.json` repassa
 `/api/*` para o Render. Assim o navegador fala só com o domínio do Vercel e o `api.js` continua com URLs relativas.
@@ -56,7 +56,7 @@ Localmente o Spring continua servindo o mesmo front em http://localhost:8080.
    PostgreSQL `moeda-estudantil-db` e o Web Service Docker `moeda-estudantil-api` (plano free, health check `/api/health`).
 2. Vercel: *Add New → Project* → este repositório → Root Directory `moeda-estudantil/src/main/resources/static`,
    Framework Preset *Other*, sem build command → *Deploy*.
-3. Troque `RENDER-SERVICE-URL` em `static/vercel.json` pela URL real do serviço no Render.
+3. O `static/vercel.json` aponta `/api/*` para o serviço do Render (troque a URL se recriar o serviço).
 
 **Variáveis de ambiente (perfil `prod`)**
 
@@ -65,7 +65,7 @@ Localmente o Spring continua servindo o mesmo front em http://localhost:8080.
 | `DATABASE_URL` | `fromDatabase.connectionString` | convertida para `DB_URL` JDBC no `ENTRYPOINT` do Dockerfile |
 | `DB_URL` | (opcional) | URL JDBC direta, ex.: `jdbc:postgresql://host:5432/moeda_estudantil` |
 | `DB_USERNAME` / `DB_PASSWORD` | `fromDatabase.user` / `password` | credenciais do banco |
-| `CORS_ALLOWED_ORIGINS` | `https://*.vercel.app` | origens extras de CORS, separadas por vírgula (localhost sempre liberado) |
+| `CORS_ALLOWED_ORIGINS` | `https://moeda-estudantil-phi.vercel.app` | origens extras de CORS, separadas por vírgula (localhost sempre liberado) |
 | `PORT` | definida pelo Render | porta HTTP |
 
 Os emails continuam em modo simulado em produção (o plano free do Render bloqueia SMTP).
