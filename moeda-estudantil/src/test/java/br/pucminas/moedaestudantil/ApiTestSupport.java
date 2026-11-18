@@ -7,6 +7,8 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 
+import java.nio.charset.StandardCharsets;
+
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -33,6 +35,7 @@ abstract class ApiTestSupport {
     }
 
     protected static <T> T ler(MvcResult r, String caminho) throws Exception {
-        return JsonPath.read(r.getResponse().getContentAsString(), caminho);
+        // application/json sem charset: o padrão do MockHttpServletResponse (ISO-8859-1) corromperia acentos
+        return JsonPath.read(r.getResponse().getContentAsString(StandardCharsets.UTF_8), caminho);
     }
 }
