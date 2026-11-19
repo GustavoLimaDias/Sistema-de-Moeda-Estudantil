@@ -1,0 +1,96 @@
+// Diagrama de Visão Geral de Interação (UML 2) – Sistema de Moeda Estudantil, Release 2
+digraph IOD {
+  graph [fontname="Helvetica", fontsize=13, rankdir=TB, nodesep=0.45, ranksep=0.42, splines=polyline, newrank=true, ordering=out, pad=0.3];
+  node  [fontname="Helvetica", fontsize=12];
+  edge  [fontname="Helvetica", fontsize=11, color="#404040", arrowsize=0.7];
+
+  subgraph cluster_sd {
+    label=<<TABLE BORDER="0" CELLPADDING="2"><TR><TD BORDER="1" SIDES="RB" COLOR="#2F5597"><B> sd </B></TD><TD ALIGN="LEFT"><B>  Sistema de Moeda Estudantil – Visão Geral de Interação (Release 2)</B></TD></TR></TABLE>>;
+    labeljust=l; color="#2F5597"; penwidth=1.4; margin=18;
+
+    node [shape=plaintext];
+    ini  [shape=circle, style=filled, fillcolor="#1B2333", width=0.22, label="", fixedsize=true];
+    fim  [shape=doublecircle, style=filled, fillcolor="#1B2333", color="#1B2333", width=0.16, label="", fixedsize=true];
+    ini2 [shape=circle, style=filled, fillcolor="#1B2333", width=0.22, label="", fixedsize=true];
+    fim2 [shape=doublecircle, style=filled, fillcolor="#1B2333", color="#1B2333", width=0.16, label="", fixedsize=true];
+
+    node [shape=diamond, style=filled, fillcolor="#FFFFFF", color="#404040", width=0.32, height=0.32, label="", fixedsize=true];
+    d_conta; m_conta; d_cad; d_perfil; d_aluno; d_troca; d_desiste; d_prof; d_emp; d_adm; m_a; m_p; m_e; m_ad; m_fim;
+
+    // interações referenciadas (ref)
+    node [shape=plaintext, style="", fixedsize=false];
+    r02 [label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" CELLPADDING="5" COLOR="#B26A00" BGCOLOR="#FFF4E0"><TR><TD ALIGN="LEFT" BORDER="1" SIDES="RB" COLOR="#B26A00"><B>ref</B></TD><TD WIDTH="10"></TD></TR><TR><TD COLSPAN="2" CELLPADDING="7">SD02 Cadastrar-se como aluno</TD></TR></TABLE>>];
+    r03 [label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" CELLPADDING="5" COLOR="#B26A00" BGCOLOR="#FFF4E0"><TR><TD ALIGN="LEFT" BORDER="1" SIDES="RB" COLOR="#B26A00"><B>ref</B></TD><TD WIDTH="10"></TD></TR><TR><TD COLSPAN="2" CELLPADDING="7">SD03 Cadastrar-se como empresa</TD></TR></TABLE>>];
+    r01 [label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" CELLPADDING="5" COLOR="#B26A00" BGCOLOR="#FFF4E0"><TR><TD ALIGN="LEFT" BORDER="1" SIDES="RB" COLOR="#B26A00"><B>ref</B></TD><TD WIDTH="10"></TD></TR><TR><TD COLSPAN="2" CELLPADDING="7">SD01 Realizar login</TD></TR></TABLE>>];
+    r07 [label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" CELLPADDING="5" COLOR="#B26A00" BGCOLOR="#FFF4E0"><TR><TD ALIGN="LEFT" BORDER="1" SIDES="RB" COLOR="#B26A00"><B>ref</B></TD><TD WIDTH="10"></TD></TR><TR><TD COLSPAN="2" CELLPADDING="7">SD07 Consultar vantagens</TD></TR></TABLE>>];
+    r08 [label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" CELLPADDING="5" COLOR="#B26A00" BGCOLOR="#FFF4E0"><TR><TD ALIGN="LEFT" BORDER="1" SIDES="RB" COLOR="#B26A00"><B>ref</B></TD><TD WIDTH="10"></TD></TR><TR><TD COLSPAN="2" CELLPADDING="7">SD08 Resgatar vantagem</TD></TR></TABLE>>];
+    r17a [label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" CELLPADDING="5" COLOR="#B26A00" BGCOLOR="#FFF4E0"><TR><TD ALIGN="LEFT" BORDER="1" SIDES="RB" COLOR="#B26A00"><B>ref</B></TD><TD WIDTH="10"></TD></TR><TR><TD COLSPAN="2" CELLPADDING="7">SD17 Cancelar resgate (estorno)</TD></TR></TABLE>>];
+    r04a [label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" CELLPADDING="5" COLOR="#B26A00" BGCOLOR="#FFF4E0"><TR><TD ALIGN="LEFT" BORDER="1" SIDES="RB" COLOR="#B26A00"><B>ref</B></TD><TD WIDTH="10"></TD></TR><TR><TD COLSPAN="2" CELLPADDING="7">SD04 Consultar extrato</TD></TR></TABLE>>];
+    r05 [label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" CELLPADDING="5" COLOR="#B26A00" BGCOLOR="#FFF4E0"><TR><TD ALIGN="LEFT" BORDER="1" SIDES="RB" COLOR="#B26A00"><B>ref</B></TD><TD WIDTH="10"></TD></TR><TR><TD COLSPAN="2" CELLPADDING="7">SD05 Enviar moedas</TD></TR></TABLE>>];
+    r04p [label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" CELLPADDING="5" COLOR="#B26A00" BGCOLOR="#FFF4E0"><TR><TD ALIGN="LEFT" BORDER="1" SIDES="RB" COLOR="#B26A00"><B>ref</B></TD><TD WIDTH="10"></TD></TR><TR><TD COLSPAN="2" CELLPADDING="7">SD04 Consultar extrato</TD></TR></TABLE>>];
+    r11 [label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" CELLPADDING="5" COLOR="#B26A00" BGCOLOR="#FFF4E0"><TR><TD ALIGN="LEFT" BORDER="1" SIDES="RB" COLOR="#B26A00"><B>ref</B></TD><TD WIDTH="10"></TD></TR><TR><TD COLSPAN="2" CELLPADDING="7">SD11 Gerenciar vantagens</TD></TR></TABLE>>];
+    r16 [label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" CELLPADDING="5" COLOR="#B26A00" BGCOLOR="#FFF4E0"><TR><TD ALIGN="LEFT" BORDER="1" SIDES="RB" COLOR="#B26A00"><B>ref</B></TD><TD WIDTH="10"></TD></TR><TR><TD COLSPAN="2" CELLPADDING="7">SD16 Conferir cupom</TD></TR></TABLE>>];
+    r17e [label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" CELLPADDING="5" COLOR="#B26A00" BGCOLOR="#FFF4E0"><TR><TD ALIGN="LEFT" BORDER="1" SIDES="RB" COLOR="#B26A00"><B>ref</B></TD><TD WIDTH="10"></TD></TR><TR><TD COLSPAN="2" CELLPADDING="7">SD17 Cancelar resgate (estorno)</TD></TR></TABLE>>];
+    r13 [label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" CELLPADDING="5" COLOR="#B26A00" BGCOLOR="#FFF4E0"><TR><TD ALIGN="LEFT" BORDER="1" SIDES="RB" COLOR="#B26A00"><B>ref</B></TD><TD WIDTH="10"></TD></TR><TR><TD COLSPAN="2" CELLPADDING="7">SD13 Gerenciar instituições</TD></TR></TABLE>>];
+    r14 [label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" CELLPADDING="5" COLOR="#B26A00" BGCOLOR="#FFF4E0"><TR><TD ALIGN="LEFT" BORDER="1" SIDES="RB" COLOR="#B26A00"><B>ref</B></TD><TD WIDTH="10"></TD></TR><TR><TD COLSPAN="2" CELLPADDING="7">SD14 Gerenciar professores</TD></TR></TABLE>>];
+    r12m [label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" CELLPADDING="5" COLOR="#B26A00" BGCOLOR="#FFF4E0"><TR><TD ALIGN="LEFT" BORDER="1" SIDES="RB" COLOR="#B26A00"><B>ref</B></TD><TD WIDTH="10"></TD></TR><TR><TD COLSPAN="2" CELLPADDING="7">SD12 Creditar semestre (manual)</TD></TR></TABLE>>];
+    r15 [label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" CELLPADDING="5" COLOR="#B26A00" BGCOLOR="#FFF4E0"><TR><TD ALIGN="LEFT" BORDER="1" SIDES="RB" COLOR="#B26A00"><B>ref</B></TD><TD WIDTH="10"></TD></TR><TR><TD COLSPAN="2" CELLPADDING="7">SD15 Gerenciar perfil e senha</TD></TR></TABLE>>];
+    r12 [label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" CELLPADDING="5" COLOR="#B26A00" BGCOLOR="#FFF4E0"><TR><TD ALIGN="LEFT" BORDER="1" SIDES="RB" COLOR="#B26A00"><B>ref</B></TD><TD WIDTH="10"></TD></TR><TR><TD COLSPAN="2" CELLPADDING="7">SD12 Creditar moedas semestrais</TD></TR></TABLE>>];
+    rsair [label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" CELLPADDING="5" COLOR="#B26A00" BGCOLOR="#FFF4E0"><TR><TD ALIGN="LEFT" BORDER="1" SIDES="RB" COLOR="#B26A00"><B>ref</B></TD><TD WIDTH="10"></TD></TR><TR><TD COLSPAN="2" CELLPADDING="7">SD01 Sair (logout)</TD></TR></TABLE>>];
+
+    // ---------------- entrada no sistema ----------------
+    ini -> d_conta;
+    d_conta -> d_cad   [xlabel="[sem conta]  "];
+    d_conta -> m_conta [xlabel="  [já tem conta]"];
+    d_cad -> r02 [xlabel="[aluno] "];
+    d_cad -> r03 [xlabel=" [empresa]"];
+    r02 -> m_conta; r03 -> m_conta;
+    m_conta -> r01;
+    r01 -> d_perfil;
+
+    // ---------------- por perfil (colunas) ----------------
+    d_perfil -> d_aluno [xlabel="[aluno]"];
+    d_perfil -> d_prof  [xlabel="[professor]"];
+    d_perfil -> d_emp   [xlabel="[empresa]"];
+    d_perfil -> d_adm   [xlabel="[administrador]"];
+    d_perfil -> r15     [xlabel="[qualquer perfil]"];
+
+    // aluno
+    d_aluno -> r07  [xlabel="[vantagens] "];
+    d_aluno -> r04a [xlabel=" [extrato]"];
+    r07 -> d_troca;
+    d_troca -> r08 [xlabel="[saldo suficiente\le quer trocar] "];
+    d_troca -> m_a [xlabel=" [não troca]"];
+    r08 -> d_desiste;
+    d_desiste -> r17a [xlabel="[desiste antes\lda troca] "];
+    d_desiste -> m_a [xlabel=" [troca presencial:\lempresa confere (SD16)]"];
+    r17a -> m_a; r04a -> m_a;
+
+    // professor
+    d_prof -> r05  [xlabel="[reconhecer] "];
+    d_prof -> r04p [xlabel=" [extrato]"];
+    r05 -> m_p; r04p -> m_p;
+
+    // empresa
+    d_emp -> r11  [xlabel="[vantagens] "];
+    // r16: aluno apresenta o cupom (rótulo no próprio ref)
+    d_emp -> r16 [xlabel="[cupom] "];
+    d_emp -> r17e [xlabel="   [não atende]"];
+    r11 -> m_e; r16 -> m_e; r17e -> m_e;
+
+    // administrador
+    d_adm -> r13; d_adm -> r14; d_adm -> r12m;
+    r13 -> m_ad; r14 -> m_ad; r12m -> m_ad;
+
+    // ---------------- saída ----------------
+    m_a -> m_fim; m_p -> m_fim; m_e -> m_fim; m_ad -> m_fim; r15 -> m_fim;
+    m_fim -> rsair;
+    rsair -> fim;
+
+    // ---------------- fluxo independente do tempo ----------------
+    ini2 -> r12 [xlabel="[início do semestre]"];
+    r12 -> fim2;
+    { rank=same; ini; ini2; }
+    { rank=same; m_a; m_p; m_e; m_ad; }
+  }
+}

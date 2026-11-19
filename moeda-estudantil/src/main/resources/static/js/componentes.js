@@ -4,6 +4,7 @@ const TIPOS_EXTRATO = {
   RESGATE: ["Resgate", "laranja"],
   ENVIO: ["Enviado", "laranja"],
   CREDITO: ["Crédito semestral", "verde"],
+  ESTORNO: ["Estorno", "verde"],
 };
 const STATUS_CUPOM = { PENDENTE: ["Aguardando troca", ""], CONFERIDO: ["Utilizado", "verde"], CANCELADO: ["Cancelado", "cinza"] };
 

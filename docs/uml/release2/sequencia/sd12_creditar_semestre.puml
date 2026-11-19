@@ -1,0 +1,35 @@
+@startuml sd12_creditar_semestre
+!include estilo.iuml
+title SD12 – Creditar moedas semestrais (UC12)
+
+actor "Tempo\n(agendador Spring)" as T
+actor "Administrador" as ADM
+participant ":AdminController" as C
+participant ":CreditoSemestralService" as S
+participant ":ProfessorRepository" as PR
+participant ":CreditoSemestralRepository" as CR
+database "Banco" as DB
+
+alt início do semestre
+  T -> S : executarAgendado()\n@Scheduled 00:05 de 1º/jan e 1º/jul
+else inicialização do servidor
+  T -> S : executarNaInicializacao()\n(ApplicationReadyEvent)
+else execução manual
+  ADM -> C : POST /api/admin/creditos-semestrais
+  C -> S : creditarSemestreAtual()
+end
+S -> S : semestre = semestreDe(hoje)  ex.: "2026/2"
+S -> PR : findAll()
+loop cada professor
+  S -> CR : existsByProfessorIdAndSemestre(id, semestre)
+  opt ainda não recebeu neste semestre
+    S -> PR : findParaAtualizarSaldo(id)
+    PR -> DB : SELECT … FOR UPDATE
+    S -> S : professor.creditarSemestre(1000)\n(soma ao saldo atual: acumulativo)
+    S -> CR : save(CreditoSemestral)
+    CR -> DB : INSERT transacao + credito_semestral
+    note right of DB : UNIQUE (professor_id, semestre)\nimpede crédito duplicado
+  end
+end
+S --> C : CreditoSemestralResponse(semestre, creditados)
+@enduml

@@ -1,0 +1,49 @@
+@startuml sd02_cadastrar_aluno
+!include estilo.iuml
+title SD02 – Cadastrar-se como aluno (UC02)
+
+actor "Aluno" as A
+boundary "cadastro.html\nforms.js" as V
+participant ":InstituicaoController" as CI
+participant ":AlunoController" as C
+participant ":AlunoService" as S
+participant ":UsuarioService" as US
+participant ":InstituicaoService" as IS
+participant ":AlunoRepository" as R
+database "Banco" as DB
+
+A -> V : abre "Criar conta"
+V -> CI : GET /api/instituicoes (@Publico)
+CI --> V : instituições pré-cadastradas
+A -> V : preenche dados pessoais, endereço,\ninstituição, curso, login e senha
+V -> C : POST /api/alunos (@Publico)
+activate C
+C -> C : @Valid AlunoRequest
+alt campo obrigatório ausente ou inválido
+  C --> V : 400 {campos}
+  V --> A : marca os campos com erro
+else dados bem formados
+  C -> S : cadastrar(request)
+  activate S
+  S -> S : Documentos.cpfValido(cpf)
+  S -> R : existsByCpf(cpf)
+  S -> US : aplicarDadosDeAcesso(aluno, nome, email, login, senha)
+  activate US
+  US -> US : email e login únicos,\nsenha ≥ 6 → hash BCrypt
+  deactivate US
+  S -> IS : buscarEntidade(instituicaoId)
+  alt CPF inválido ou repetido, email/login em uso
+    S --> C : RegraNegocioException
+    C --> V : 422 {mensagem, campos}
+  else tudo certo
+    S -> R : save(aluno)
+    R -> DB : INSERT usuario + aluno (herança JOINED)
+    S --> C : AlunoResponse (sem a senha)
+    deactivate S
+    C --> V : 201 Created
+    deactivate C
+    ref over V : SD01 – Realizar login (login automático)
+    V --> A : abre a área do aluno
+  end
+end
+@enduml

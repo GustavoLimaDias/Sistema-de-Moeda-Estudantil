@@ -1,0 +1,62 @@
+@startuml sd14_gerenciar_professores
+!include estilo.iuml
+title SD14 – Gerenciar professores (UC14)
+
+actor "Administrador" as ADM
+boundary "admin.js" as V
+participant ":ProfessorController" as C
+participant ":ProfessorService" as S
+participant ":UsuarioService" as US
+participant ":CreditoSemestralService" as CS
+participant ":ProfessorRepository" as R
+database "Banco" as DB
+
+note over V, C : todas as rotas exigem perfil ADMIN
+alt importar a lista da instituição
+  ADM -> V : instituição + linhas "nome;email;cpf;departamento;login"
+  V -> C : POST /api/professores/importacao [lista]
+  activate C
+  C -> S : importar(lista)
+  activate S
+  loop cada linha
+    S -> S : Bean Validation da linha\nCPF repetido dentro da lista?
+    S -> S : criar(request)
+    activate S
+    S -> R : existsByCpf(cpf)
+    S -> US : aplicarDadosDeAcesso(...)\nsenha inicial = CPF
+    S -> R : save(professor)
+    S -> CS : creditarSeNecessario(id, semestre atual)
+    deactivate S
+  end
+  alt alguma linha inválida
+    S --> C : RegraNegocioException("Linha N: …")
+    note right of S : @Transactional: rollback,\nnenhum professor é gravado
+    C --> V : 422
+  else todas válidas
+    S --> C : List<ProfessorResponse>
+    C --> V : 201 Created
+  end
+  deactivate S
+  deactivate C
+else cadastrar um professor
+  V -> C : POST /api/professores
+  C -> S : cadastrar(request)
+  ref over S, R : mesmo fluxo de criar(request)
+else editar
+  V -> C : PUT /api/professores/{id}
+  C -> S : atualizar(id, request)
+  S -> R : existsByCpfAndIdNot(cpf, id)
+  S -> US : aplicarDadosDeAcesso(...) (senha vazia mantém a atual)
+  C --> V : 200
+else excluir
+  V -> C : DELETE /api/professores/{id}
+  C -> S : excluir(id)
+  alt já enviou moedas
+    S --> C : RegraNegocioException
+    C --> V : 422
+  else sem envios
+    S -> DB : DELETE créditos semestrais e professor
+    C --> V : 204
+  end
+end
+@enduml

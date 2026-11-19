@@ -1,0 +1,10 @@
+target/
+data/
+.idea/
+.vscode/
+*.iml
+.mvn/wrapper/maven-wrapper.jar
+*.mv.db
+*.trace.db
+Dockerfile
+.dockerignore

@@ -1,0 +1,50 @@
+@startuml sd15_gerenciar_perfil
+!include estilo.iuml
+title SD15 – Gerenciar perfil e alterar senha (UC15)
+
+actor "Usuário" as U
+boundary "layout.js\naluno.js / empresa.js" as V
+participant ":AuthController" as CA
+participant ":AutenticacaoService" as SA
+participant ":AlunoController /\n:EmpresaParceiraController" as C
+participant ":AlunoService /\n:EmpresaParceiraService" as S
+participant ":UsuarioRepository" as R
+participant ":TokenService" as T
+database "Banco" as DB
+
+== Alterar senha (qualquer perfil) ==
+U -> V : botão "Senha" no topo
+V -> CA : PUT /api/auth/senha {senhaAtual, novaSenha}
+activate CA
+CA -> CA : @Valid: nova senha com 6 a 72 caracteres
+CA -> SA : alterarSenha(sessao.id, request)
+activate SA
+SA -> R : findById(id)
+SA -> SA : BCrypt.matches(senhaAtual, hash)
+alt senha atual incorreta ou igual à nova
+  SA --> CA : RegraNegocioException
+  CA --> V : 422 {campos}
+else senha atual confere
+  SA -> SA : usuario.alterarSenha(nova, BCrypt)
+  SA -> DB : UPDATE usuario (no commit)
+  CA --> V : 204
+end
+deactivate SA
+deactivate CA
+
+== Editar dados (aluno e empresa) ==
+U -> V : aba "Meu perfil"
+V -> C : PUT /api/alunos/{id} | /api/empresas/{id}
+activate C
+C -> C : Acesso.exigirProprioOuAdmin(sessão, id)
+C -> S : atualizar(id, request)
+activate S
+S -> S : CPF/CNPJ válido e único,\nemail e login únicos
+S -> DB : UPDATE
+S -> T : atualizarDados(usuario)\n(nome e email da sessão)
+S --> C : resposta atualizada
+deactivate S
+C --> V : 200
+deactivate C
+V --> U : nome atualizado no topo
+@enduml

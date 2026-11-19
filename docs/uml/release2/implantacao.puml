@@ -1,0 +1,106 @@
+@startuml implantacao
+skinparam shadowing false
+skinparam defaultFontName Helvetica
+skinparam defaultFontSize 12
+skinparam nodesep 25
+skinparam ranksep 45
+skinparam ArrowColor #404040
+skinparam node {
+  BorderColor #2F5597
+  BackgroundColor #EEF3FB
+  BackgroundColor<<executionEnvironment>> #FFFFFF
+  BorderColor<<executionEnvironment>> #555555
+}
+skinparam artifact {
+  BackgroundColor #E8F5E9
+  BorderColor #2E7D32
+}
+skinparam component {
+  BackgroundColor #FFF4E0
+  BorderColor #B26A00
+}
+skinparam database {
+  BackgroundColor #F3E8FA
+  BorderColor #6A1B9A
+}
+skinparam note {
+  BackgroundColor #FFFDE7
+  BorderColor #B8A100
+}
+
+left to right direction
+title Sistema de Moeda Estudantil · Diagrama de Implantação (Release 2 · Lab04S02)
+
+node "Computador / Smartphone do usuário" as CLIENTE <<device>> {
+  node "Navegador Web" as NAV <<executionEnvironment>>
+}
+
+node "Vercel Edge Network (CDN)" as VERCEL <<device>> {
+  artifact "index.html" as A1
+  artifact "cadastro.html" as A2
+  artifact "aluno.html" as A3
+  artifact "professor.html" as A4
+  artifact "empresa.html" as A5
+  artifact "admin*.html" as A6
+  artifact "js/*.js" as A7
+  artifact "css/app.css" as A8
+  artifact "img/*" as A9
+  artifact "vercel.json\n(rewrite /api/*)" as A10
+}
+
+node "Render Web Service (free · 512 MB)" as RENDER <<device>> {
+  node "Docker Container" as DOCKER <<executionEnvironment>> {
+    node "JVM (Eclipse Temurin 17 JRE)" as JVM <<executionEnvironment>> {
+      artifact "moeda-estudantil-1.0.0.jar\n(Spring Boot 3.3.5 · Tomcat embutido)" as JAR
+      component "Controllers\n(REST /api/**)" as CTRL
+      component "Security\n(AutenticacaoInterceptor · TokenService)" as SEC
+      component "Services\n(regras de negócio · eventos · emails)" as SRV
+      component "Repositories\n(Spring Data JPA / Hibernate)" as REPO
+    }
+  }
+}
+
+node "Render PostgreSQL (free)" as PGNODE <<device>> {
+  database "moeda_estudantil" as DB <<database>>
+}
+
+node SMTP <<device>> #F7F7F7;line.dashed [
+Servidor SMTP externo
+(opcional)
+]
+
+JAR ..> CTRL : <<manifest>>
+JAR ..> SEC : <<manifest>>
+JAR ..> SRV : <<manifest>>
+JAR ..> REPO : <<manifest>>
+
+NAV <--> VERCEL : HTTPS
+VERCEL --> RENDER : HTTPS (rewrite /api/*)\nREST / JSON + Bearer token
+RENDER --> PGNODE : JDBC / TCP 5432\n(rede privada do Render)
+RENDER ..> SMTP : SMTP 587\n(opcional)
+
+note right of SMTP
+  Não utilizado no plano free
+  (Render bloqueia portas SMTP):
+  emails em modo simulado, gravados em
+  notificacao_email e exibidos na aba "Emails".
+end note
+
+note bottom of RENDER
+  Variáveis de ambiente (render.yaml):
+  DATABASE_URL ← fromDatabase.connectionString
+  (convertida para DB_URL jdbc:postgresql://... no ENTRYPOINT)
+  DB_USERNAME / DB_PASSWORD ← fromDatabase.user / password
+  CORS_ALLOWED_ORIGINS = https://*.vercel.app
+  PORT (definida pelo Render) · perfil Spring "prod"
+  JAVA_OPTS = -XX:MaxRAMPercentage=75 -XX:+UseSerialGC
+  Health check: GET /api/health → {"status":"UP"}
+end note
+
+note left of VERCEL
+  Root Directory:
+  moeda-estudantil/src/main/resources/static
+  O navegador só fala com o domínio do Vercel;
+  /api/* é repassado ao Render (sem CORS no navegador).
+end note
+@enduml

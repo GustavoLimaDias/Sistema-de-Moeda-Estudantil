@@ -124,13 +124,13 @@ const UI = {
       d.id = "confirmar";
       d.className = "pequeno";
       d.innerHTML = `<div class="modal-corpo"><p data-texto style="margin:0"></p></div>
-        <div class="modal-rodape"><button type="button" class="btn secundario" data-nao>Cancelar</button>
+        <div class="modal-rodape"><button type="button" class="btn secundario" data-nao>Voltar</button>
         <button type="button" class="btn perigo" data-sim></button></div>`;
       document.body.appendChild(d);
     }
     d.querySelector("[data-texto]").textContent = texto;
     d.querySelector("[data-sim]").textContent = rotulo;
-    d.querySelector("[data-sim]").className = "btn " + (rotulo === "Excluir" ? "perigo" : "");
+    d.querySelector("[data-sim]").className = "btn " + (["Excluir", "Cancelar cupom"].includes(rotulo) ? "perigo" : "");
     d.showModal();
     return new Promise((resolve) => {
       const fim = (v) => { d.close(); resolve(v); };

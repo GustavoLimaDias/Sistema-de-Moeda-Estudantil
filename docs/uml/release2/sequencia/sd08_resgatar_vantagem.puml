@@ -1,0 +1,48 @@
+@startuml sd08_resgatar_vantagem
+!include estilo.iuml
+title SD08 – Resgatar vantagem (UC08 + UC09 + UC10)
+
+actor "Aluno" as A
+boundary "aluno.js" as V
+participant ":AutenticacaoInterceptor" as I
+participant ":AlunoController" as C
+participant ":TransacaoService" as S
+participant ":AlunoRepository\n:VantagemRepository\n:ResgateVantagemRepository" as R
+database "Banco" as DB
+participant ":NotificacaoService" as N
+
+A -> V : clica em "Resgatar" e confirma
+V -> I : POST /api/alunos/me/resgates {vantagemId}
+I -> I : token válido e perfil ALUNO?
+I -> C : resgatar(request, sessão)
+activate C
+C -> S : resgatarVantagem(alunoId, vantagemId)
+activate S
+S -> R : findParaAtualizarSaldo(alunoId)
+R -> DB : SELECT … FOR UPDATE
+S -> R : findWithEmpresaById(vantagemId)
+alt vantagem inativa ou saldo insuficiente
+  S --> C : RegraNegocioException
+  C --> V : 422 {mensagem}
+else resgate válido
+  S -> S : aluno.debitarMoedas(custo)
+  loop até o código ser inédito
+    S -> S : resgate.gerarCodigo() (UC09)
+    S -> R : existsByCodigoCupom(codigo)
+  end
+  S -> R : save(resgate) [status PENDENTE]
+  S -> S : publishEvent(VantagemResgatadaEvent)
+  note over S, DB : COMMIT da transação
+  S -> N : evento (AFTER_COMMIT) – UC10
+  activate N
+  N -> DB : email de cupom para o aluno
+  N -> DB : email de conferência para a empresa
+  N ->> N : envia por SMTP, se configurado
+  deactivate N
+  S --> C : ResgateResponse (código do cupom)
+  deactivate S
+  C --> V : 201 Created
+  deactivate C
+  V --> A : exibe o cupom e atualiza o saldo
+end
+@enduml

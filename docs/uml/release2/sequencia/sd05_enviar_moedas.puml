@@ -1,0 +1,42 @@
+@startuml sd05_enviar_moedas
+!include estilo.iuml
+title SD05 – Enviar moedas (UC05 + UC06)
+
+actor "Professor" as P
+boundary "professor.js" as V
+participant ":ProfessorController" as C
+participant ":TransacaoService" as S
+participant ":ProfessorRepository\n:AlunoRepository" as R
+participant ":TransferenciaMoedaRepository" as RT
+database "Banco" as DB
+participant ":NotificacaoService" as N
+
+P -> V : escolhe aluno, valor e motivo
+V -> C : POST /api/professores/me/envios
+note right of C : interceptor: perfil PROFESSOR\n@Valid: motivo obrigatório,\nvalor > 0 (senão 400)
+activate C
+C -> S : enviarMoedas(professorId, request)
+activate S
+S -> R : findParaAtualizarSaldo(professor)\nfindParaAtualizarSaldo(aluno)
+R -> DB : SELECT … FOR UPDATE
+alt aluno de outra instituição ou saldo insuficiente
+  S --> C : RegraNegocioException
+  C --> V : 422 {mensagem, campos}
+else envio válido
+  S -> S : professor.debitarMoedas(valor)\naluno.receberMoedas(valor)
+  S -> RT : save(TransferenciaMoeda)
+  S -> S : publishEvent(MoedasEnviadasEvent)
+  note over S, DB : COMMIT da transação
+  S -> N : evento (AFTER_COMMIT)
+  activate N
+  note right of N : nova transação\n(REQUIRES_NEW)
+  N -> DB : registra notificacao_email
+  N ->> N : envia por SMTP, se configurado
+  deactivate N
+  S --> C : TransferenciaResponse
+  deactivate S
+  C --> V : 201 Created (novo saldo)
+  deactivate C
+  V --> P : atualiza saldo e últimos envios
+end
+@enduml

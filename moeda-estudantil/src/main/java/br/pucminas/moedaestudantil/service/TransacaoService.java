@@ -6,13 +6,16 @@ import br.pucminas.moedaestudantil.dto.ItemExtratoResponse;
 import br.pucminas.moedaestudantil.dto.ResgateResponse;
 import br.pucminas.moedaestudantil.dto.TransferenciaResponse;
 import br.pucminas.moedaestudantil.event.MoedasEnviadasEvent;
+import br.pucminas.moedaestudantil.event.ResgateCanceladoEvent;
 import br.pucminas.moedaestudantil.event.VantagemResgatadaEvent;
 import br.pucminas.moedaestudantil.exception.RecursoNaoEncontradoException;
 import br.pucminas.moedaestudantil.exception.RegraNegocioException;
 import br.pucminas.moedaestudantil.model.Aluno;
 import br.pucminas.moedaestudantil.model.CreditoSemestral;
+import br.pucminas.moedaestudantil.model.Perfil;
 import br.pucminas.moedaestudantil.model.Professor;
 import br.pucminas.moedaestudantil.model.ResgateVantagem;
+import br.pucminas.moedaestudantil.model.StatusResgate;
 import br.pucminas.moedaestudantil.model.TransferenciaMoeda;
 import br.pucminas.moedaestudantil.model.Vantagem;
 import br.pucminas.moedaestudantil.repository.AlunoRepository;
@@ -30,7 +33,8 @@ import java.util.Comparator;
 import java.util.List;
 
 /**
- * Movimentações de moeda: envio (UC05), resgate de vantagem (UC08/UC09) e extratos (UC04).
+ * Movimentações de moeda: envio (UC05), resgate de vantagem (UC08/UC09), conferência (UC16),
+ * cancelamento com estorno (UC17) e extratos (UC04).
  * Cada operação roda numa transação com bloqueio pessimista das contas envolvidas,
  * e os emails (UC06/UC10) são disparados por eventos somente após o commit.
  */
@@ -129,16 +133,58 @@ public class TransacaoService {
                 .map(ResgateResponse::from).toList();
     }
 
+    /** UC16 – a empresa confirma a troca presencial do cupom. */
     public ResgateResponse conferirCupom(Long empresaId, String codigo) {
-        ResgateVantagem resgate = resgateRepository.findByCodigoCupom(codigo.trim().toUpperCase())
-                .filter(r -> r.getVantagem().getEmpresa().getId().equals(empresaId))
-                .orElseThrow(() -> new RecursoNaoEncontradoException("Cupom não encontrado para a sua empresa."));
+        ResgateVantagem resgate = buscarParaAtualizar(codigo);
+        exigirDaEmpresa(resgate, empresaId);
         try {
             resgate.conferir();
         } catch (IllegalStateException e) {
             throw new RegraNegocioException("codigo", e.getMessage());
         }
         return ResgateResponse.from(resgate);
+    }
+
+    // ------------------------------------------------------------------ cancelamento (UC17)
+
+    /** O aluno desiste de um cupom ainda não usado e recebe as moedas de volta. */
+    public ResgateResponse cancelarResgateDoAluno(Long alunoId, String codigo) {
+        ResgateVantagem resgate = buscarParaAtualizar(codigo);
+        if (!resgate.getAluno().getId().equals(alunoId)) {
+            throw new RecursoNaoEncontradoException("Cupom não encontrado.");
+        }
+        return cancelar(resgate, Perfil.ALUNO);
+    }
+
+    /** A empresa cancela um cupom que não pode atender (ex.: produto indisponível); o aluno é reembolsado. */
+    public ResgateResponse cancelarResgateDaEmpresa(Long empresaId, String codigo) {
+        ResgateVantagem resgate = buscarParaAtualizar(codigo);
+        exigirDaEmpresa(resgate, empresaId);
+        return cancelar(resgate, Perfil.EMPRESA);
+    }
+
+    private ResgateResponse cancelar(ResgateVantagem resgate, Perfil canceladoPor) {
+        Aluno aluno = alunoRepository.findParaAtualizarSaldo(resgate.getAluno().getId())
+                .orElseThrow(() -> new RecursoNaoEncontradoException("Aluno não encontrado."));
+        try {
+            resgate.cancelar();
+        } catch (IllegalStateException e) {
+            throw new RegraNegocioException("codigo", e.getMessage());
+        }
+        aluno.receberMoedas(resgate.getValor());
+        eventos.publishEvent(new ResgateCanceladoEvent(resgate.getId(), canceladoPor));
+        return ResgateResponse.from(resgate);
+    }
+
+    private ResgateVantagem buscarParaAtualizar(String codigo) {
+        return resgateRepository.findParaAtualizarStatus(codigo.trim().toUpperCase())
+                .orElseThrow(() -> new RecursoNaoEncontradoException("Cupom não encontrado."));
+    }
+
+    private void exigirDaEmpresa(ResgateVantagem resgate, Long empresaId) {
+        if (!resgate.getVantagem().getEmpresa().getId().equals(empresaId)) {
+            throw new RecursoNaoEncontradoException("Cupom não encontrado para a sua empresa.");
+        }
     }
 
     // ------------------------------------------------------------------ extratos
@@ -156,6 +202,11 @@ public class TransacaoService {
             itens.add(new ItemExtratoResponse(r.getId(), r.getDataHora(), "RESGATE", -r.getValor(),
                     r.getVantagem().getNome(), r.getVantagem().getEmpresa().getNome(), r.getCodigoCupom(),
                     r.getStatus().name()));
+            if (r.getStatus() == StatusResgate.CANCELADO) {
+                itens.add(new ItemExtratoResponse(r.getId(), r.getDataCancelamento(), "ESTORNO", r.getValor(),
+                        "Estorno: " + r.getVantagem().getNome(), r.getVantagem().getEmpresa().getNome(),
+                        r.getCodigoCupom(), r.getStatus().name()));
+            }
         }
         return montar(aluno.getSaldo(), itens);
     }

@@ -2,6 +2,8 @@ package br.pucminas.moedaestudantil.service;
 
 import br.pucminas.moedaestudantil.dto.NotificacaoResponse;
 import br.pucminas.moedaestudantil.event.MoedasEnviadasEvent;
+import br.pucminas.moedaestudantil.event.ResgateCanceladoEvent;
+import br.pucminas.moedaestudantil.model.Perfil;
 import br.pucminas.moedaestudantil.event.VantagemResgatadaEvent;
 import br.pucminas.moedaestudantil.model.NotificacaoEmail;
 import br.pucminas.moedaestudantil.model.ResgateVantagem;
@@ -116,6 +118,36 @@ public class NotificacaoService {
                 """.formatted(r.getVantagem().getEmpresa().getNome(), r.getAluno().getNome(), r.getAluno().getEmail(),
                 r.getVantagem().getNome(), quando, r.getCodigoCupom());
         enviar(r.getVantagem().getEmpresa().getEmail(), "Novo resgate: " + r.getVantagem().getNome(), avisoEmpresa);
+    }
+
+    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public void aoCancelarResgate(ResgateCanceladoEvent evento) {
+        ResgateVantagem r = resgateRepository.findWithDetalhesById(evento.resgateId()).orElseThrow();
+        String quem = evento.canceladoPor() == Perfil.EMPRESA
+                ? "pela empresa " + r.getVantagem().getEmpresa().getNome()
+                : "por você";
+        String paraAluno = """
+                Olá, %s!
+
+                O resgate de "%s" (cupom %s) foi cancelado %s.
+
+                As %d moedas foram devolvidas. Seu saldo atual é de %d moedas.
+
+                Sistema de Moeda Estudantil
+                """.formatted(r.getAluno().getNome(), r.getVantagem().getNome(), r.getCodigoCupom(), quem,
+                r.getValor(), r.getAluno().getSaldo());
+        enviar(r.getAluno().getEmail(), "Resgate cancelado: " + r.getVantagem().getNome(), paraAluno);
+
+        String paraEmpresa = """
+                Olá, %s!
+
+                O cupom %s (%s, aluno %s) foi cancelado e não deve mais ser aceito na troca.
+
+                Sistema de Moeda Estudantil
+                """.formatted(r.getVantagem().getEmpresa().getNome(), r.getCodigoCupom(), r.getVantagem().getNome(),
+                r.getAluno().getNome());
+        enviar(r.getVantagem().getEmpresa().getEmail(), "Cupom cancelado: " + r.getCodigoCupom(), paraEmpresa);
     }
 
     /** Caixa de entrada de demonstração: emails enviados para o usuário logado. */

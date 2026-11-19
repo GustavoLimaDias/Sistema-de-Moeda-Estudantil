@@ -1,0 +1,35 @@
+# Render Blueprint (https://render.com/docs/blueprint-spec): New > Blueprint > este repositório
+databases:
+  - name: moeda-estudantil-db
+    databaseName: moeda_estudantil
+    plan: free
+    region: oregon
+    # só a rede privada do Render (a API usa a connectionString interna); sem acesso externo
+    ipAllowList: []
+
+services:
+  - type: web
+    name: moeda-estudantil-api
+    runtime: docker
+    plan: free
+    region: oregon
+    # caminhos relativos à raiz do repositório (blueprint-spec); sem rootDir para evitar ambiguidade
+    dockerfilePath: ./moeda-estudantil/Dockerfile
+    dockerContext: ./moeda-estudantil
+    healthCheckPath: /api/health
+    envVars:
+      # connectionString (postgresql://...) é convertida para JDBC no ENTRYPOINT do Dockerfile
+      - key: DATABASE_URL
+        fromDatabase:
+          name: moeda-estudantil-db
+          property: connectionString
+      - key: DB_USERNAME
+        fromDatabase:
+          name: moeda-estudantil-db
+          property: user
+      - key: DB_PASSWORD
+        fromDatabase:
+          name: moeda-estudantil-db
+          property: password
+      - key: CORS_ALLOWED_ORIGINS
+        value: https://moeda-estudantil-phi.vercel.app

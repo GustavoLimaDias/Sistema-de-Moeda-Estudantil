@@ -1,5 +1,6 @@
 package br.pucminas.moedaestudantil.controller;
 
+import br.pucminas.moedaestudantil.dto.AlterarSenhaRequest;
 import br.pucminas.moedaestudantil.dto.LoginRequest;
 import br.pucminas.moedaestudantil.dto.LoginResponse;
 import br.pucminas.moedaestudantil.dto.NotificacaoResponse;
@@ -14,13 +15,14 @@ import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 
-/** UC01 – login/logout para todos os perfis. */
+/** UC01 – login/logout e UC15 – troca de senha, para todos os perfis. */
 @RestController
 @RequestMapping("/api/auth")
 public class AuthController {
@@ -48,6 +50,13 @@ public class AuthController {
     @GetMapping("/me")
     public SessaoUsuario me(@UsuarioLogado SessaoUsuario sessao) {
         return sessao;
+    }
+
+    @PutMapping("/senha")
+    public ResponseEntity<Void> alterarSenha(@Valid @RequestBody AlterarSenhaRequest request,
+                                             @UsuarioLogado SessaoUsuario sessao) {
+        autenticacaoService.alterarSenha(sessao.id(), request);
+        return ResponseEntity.noContent().build();
     }
 
     /** Emails que o sistema enviou para o usuário logado (caixa de entrada de demonstração). */

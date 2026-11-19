@@ -1,0 +1,46 @@
+@startuml sd04_consultar_extrato
+!include estilo.iuml
+title SD04 – Consultar extrato (UC04)
+
+actor "Aluno ou\nProfessor" as U
+boundary "aluno.js /\nprofessor.js" as V
+participant ":AutenticacaoInterceptor" as I
+participant ":AlunoController /\n:ProfessorController" as C
+participant ":TransacaoService" as S
+participant ":TransferenciaMoedaRepository" as RT
+participant ":ResgateVantagemRepository /\n:CreditoSemestralRepository" as RR
+database "Banco" as DB
+
+U -> V : abre a área (aba Extrato)
+V -> I : GET /api/{alunos|professores}/me/extrato
+activate I
+I -> I : token válido e perfil\nALUNO ou PROFESSOR?
+I -> C : extrato(@UsuarioLogado sessão)
+deactivate I
+activate C
+alt perfil ALUNO
+  C -> S : extratoAluno(sessao.id)
+  activate S
+  S -> RT : findByDestinatarioIdOrderByDataHoraDesc(id)
+  RT -> DB : SELECT recebimentos
+  S -> RR : findByAlunoIdOrderByDataHoraDesc(id)
+  RR -> DB : SELECT resgates
+  loop cada resgate
+    S -> S : item RESGATE (−custo)
+    opt status = CANCELADO
+      S -> S : item ESTORNO (+custo)
+    end
+  end
+else perfil PROFESSOR
+  C -> S : extratoProfessor(sessao.id)
+  S -> RT : findByRemetenteIdOrderByDataHoraDesc(id)
+  S -> RR : findByProfessorIdOrderByDataHoraDesc(id)
+  S -> S : itens ENVIO (−) e CREDITO (+)
+end
+S -> S : ordena por data, soma entradas e saídas
+S --> C : ExtratoResponse(saldo, totais, transações)
+deactivate S
+C --> V : 200
+deactivate C
+V --> U : saldo, indicadores e tabela de movimentações
+@enduml

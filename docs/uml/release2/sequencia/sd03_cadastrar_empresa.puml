@@ -1,0 +1,39 @@
+@startuml sd03_cadastrar_empresa
+!include estilo.iuml
+title SD03 – Cadastrar-se como empresa parceira (UC03)
+
+actor "Empresa Parceira" as E
+boundary "cadastro.html\nforms.js" as V
+participant ":EmpresaParceiraController" as C
+participant ":EmpresaParceiraService" as S
+participant ":UsuarioService" as US
+participant ":EmpresaParceiraRepository" as R
+database "Banco" as DB
+
+E -> V : aba "Sou empresa parceira"\nnome, CNPJ, email, descrição, login, senha
+V -> C : POST /api/empresas (@Publico)
+activate C
+C -> C : @Valid EmpresaRequest
+alt dados mal formados
+  C --> V : 400 {campos}
+else dados bem formados
+  C -> S : cadastrar(request)
+  activate S
+  S -> S : Documentos.cnpjValido(cnpj)
+  S -> R : existsByCnpj(cnpj)
+  S -> US : aplicarDadosDeAcesso(...)
+  alt CNPJ inválido ou repetido, email/login em uso
+    S --> C : RegraNegocioException
+    C --> V : 422 {mensagem, campos}
+  else dados válidos
+    S -> R : save(empresa)
+    R -> DB : INSERT usuario + empresa_parceira
+    S --> C : EmpresaResponse
+    deactivate S
+    C --> V : 201 Created
+    deactivate C
+    ref over V : SD01 – Realizar login (login automático)
+    V --> E : abre a área da empresa
+  end
+end
+@enduml

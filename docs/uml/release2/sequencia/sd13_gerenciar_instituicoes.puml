@@ -1,0 +1,48 @@
+@startuml sd13_gerenciar_instituicoes
+!include estilo.iuml
+title SD13 – Gerenciar instituições (UC13)
+
+actor "Administrador" as ADM
+boundary "admin.js" as V
+participant ":InstituicaoController" as C
+participant ":InstituicaoService" as S
+participant ":InstituicaoEnsinoRepository" as R
+participant ":AlunoRepository\n:ProfessorRepository" as AR
+database "Banco" as DB
+
+note over V, C : interceptor: POST, PUT e DELETE exigem perfil ADMIN;\nGET /api/instituicoes é público (alimenta o cadastro de aluno)
+alt cadastrar ou editar
+  ADM -> V : nome e CNPJ
+  V -> C : POST /api/instituicoes  |  PUT /api/instituicoes/{id}
+  activate C
+  C -> S : cadastrar(request) | atualizar(id, request)
+  activate S
+  S -> S : Documentos.cnpjValido(cnpj)
+  S -> R : existsByCnpj(cnpj) | existsByCnpjAndIdNot(cnpj, id)
+  alt CNPJ inválido ou repetido
+    S --> C : RegraNegocioException
+    C --> V : 422 {campos.cnpj}
+  else CNPJ válido e inédito
+    S -> R : save(instituicao)
+    R -> DB : INSERT | UPDATE instituicao_ensino
+    S --> C : InstituicaoResponse
+    C --> V : 201 | 200
+  end
+  deactivate S
+  deactivate C
+else excluir
+  ADM -> V : "Excluir"
+  V -> C : DELETE /api/instituicoes/{id}
+  C -> S : excluir(id)
+  S -> AR : existsByInstituicaoId(id)
+  alt há alunos ou professores vinculados
+    S --> C : RegraNegocioException
+    C --> V : 422
+  else sem vínculos
+    S -> R : delete(instituicao)
+    R -> DB : DELETE instituicao_ensino
+    C --> V : 204
+  end
+end
+V --> ADM : tabela de instituições atualizada
+@enduml

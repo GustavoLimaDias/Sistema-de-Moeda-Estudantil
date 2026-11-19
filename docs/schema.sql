@@ -85,6 +85,7 @@ CREATE TABLE resgate_vantagem (
     transacao_id  BIGINT      PRIMARY KEY REFERENCES transacao (id),
     codigo_cupom  VARCHAR(12) NOT NULL UNIQUE,
     status        VARCHAR(20) NOT NULL CHECK (status IN ('PENDENTE', 'CONFERIDO', 'CANCELADO')),
+    data_cancelamento TIMESTAMP,   -- Release 2: preenchida quando o cupom é cancelado (estorno)
     aluno_id      BIGINT      NOT NULL REFERENCES aluno (usuario_id),
     vantagem_id   BIGINT      NOT NULL REFERENCES vantagem (id)
 );

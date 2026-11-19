@@ -49,4 +49,11 @@ public class InstituicaoController {
     public InstituicaoResponse atualizar(@PathVariable Long id, @Valid @RequestBody InstituicaoRequest request) {
         return service.atualizar(id, request);
     }
+
+    @DeleteMapping("/{id}")
+    @RequerPerfil(Perfil.ADMIN)
+    public ResponseEntity<Void> excluir(@PathVariable Long id) {
+        service.excluir(id);
+        return ResponseEntity.noContent().build();
+    }
 }

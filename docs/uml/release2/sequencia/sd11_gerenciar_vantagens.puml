@@ -1,0 +1,52 @@
+@startuml sd11_gerenciar_vantagens
+!include estilo.iuml
+title SD11 – Gerenciar vantagens (UC11)
+
+actor "Empresa Parceira" as E
+boundary "empresa.js\nvantagens-editor.js" as V
+participant ":EmpresaParceiraController" as C
+participant ":VantagemService" as S
+participant ":EmpresaParceiraService" as ES
+participant ":VantagemRepository" as R
+participant ":ResgateVantagemRepository" as RR
+database "Banco" as DB
+
+note over V, C : todas as rotas passam pelo interceptor e por\nAcesso.exigirProprioOuAdmin(sessão, empresaId) → 403 se for outra empresa
+alt cadastrar
+  E -> V : nome, descrição, foto, custo
+  V -> C : POST /api/empresas/{id}/vantagens
+  activate C
+  C -> C : @Valid (custo > 0, campos obrigatórios)
+  C -> S : cadastrar(empresaId, request)
+  activate S
+  S -> ES : buscarEntidade(empresaId)
+  S -> S : empresa.cadastrarVantagem(v)
+  S -> R : save(vantagem)
+  R -> DB : INSERT vantagem
+  S --> C : VantagemResponse
+  deactivate S
+  C --> V : 201 Created
+  deactivate C
+else editar ou ativar/desativar
+  E -> V : altera dados ou desmarca "ativa"
+  V -> C : PUT /api/empresas/{id}/vantagens/{vid}
+  C -> S : atualizar(empresaId, vid, request)
+  S -> R : findByIdAndEmpresaId(vid, empresaId)
+  S -> R : save(vantagem)
+  C --> V : 200
+else excluir
+  E -> V : "Excluir"
+  V -> C : DELETE /api/empresas/{id}/vantagens/{vid}
+  C -> S : excluir(empresaId, vid)
+  S -> RR : existsByVantagemId(vid)
+  alt já resgatada por algum aluno
+    S --> C : RegraNegocioException
+    C --> V : 422 "Desative-a em vez de excluir."
+  else sem resgates
+    S -> R : delete(vantagem)
+    R -> DB : DELETE vantagem
+    C --> V : 204
+  end
+end
+V --> E : lista de vantagens atualizada
+@enduml

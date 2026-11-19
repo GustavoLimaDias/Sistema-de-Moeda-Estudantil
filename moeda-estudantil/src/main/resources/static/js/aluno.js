@@ -18,7 +18,7 @@
     const resgates = extrato.transacoes.filter((t) => t.tipo === "RESGATE");
     const pendentes = resgates.filter((t) => t.status === "PENDENTE");
     document.getElementById("saldo").textContent = saldo;
-    document.getElementById("recebidas").textContent = extrato.totalEntradas;
+    document.getElementById("recebidas").textContent = recebimentos.reduce((t, r) => t + r.valor, 0);
     document.getElementById("qtd-reconhecimentos").textContent =
       recebimentos.length === 1 ? "1 reconhecimento" : `${recebimentos.length} reconhecimentos`;
     document.getElementById("cupons-ativos").textContent = pendentes.length;
@@ -41,8 +41,24 @@
         </div>
         <div class="sub">${UI.escapar(r.contraparte)} · ${UI.dataHora(r.dataHora)} · ${Math.abs(r.valor)} moedas</div>
         <div class="codigo">${UI.escapar(r.codigoCupom)}</div>
+        ${r.status === "PENDENTE" ? `<div class="acoes" style="justify-content:flex-start"><button class="btn secundario pequeno" data-cancelar="${UI.escapar(r.codigoCupom)}">Cancelar e devolver moedas</button></div>` : ""}
       </article>`).join("");
   }
+
+  document.getElementById("cupons").addEventListener("click", async (ev) => {
+    const b = ev.target.closest("[data-cancelar]");
+    if (!b) return;
+    if (!(await UI.confirmar(`Cancelar o cupom ${b.dataset.cancelar}? As moedas voltam para o seu saldo.`, "Cancelar cupom"))) return;
+    b.disabled = true;
+    try {
+      const r = await API.post(`/api/alunos/me/resgates/${encodeURIComponent(b.dataset.cancelar)}/cancelar`);
+      UI.toast(`Cupom cancelado. ${r.custo} moedas devolvidas.`);
+      await carregarExtrato();
+    } catch (e) {
+      UI.toast(e.mensagem, "erro");
+      b.disabled = false;
+    }
+  });
 
   async function carregarCatalogo() {
     vantagens = await API.get("/api/vantagens");
