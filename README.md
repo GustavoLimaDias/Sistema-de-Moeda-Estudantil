@@ -1,6 +1,6 @@
 # Sistema de Moeda Estudantil · Release 2 (Lab04S01)
 
-Laboratório 3 de Projeto de Software (PUC Minas, Engenharia de Software, 2º/2026, Profa. Milena Menezes Adão).
+Laboratório 4 de Projeto de Software (PUC Minas, Engenharia de Software, 2º/2026, Profa. Milena Menezes Adão).
 Integrante: **Gustavo Lima Dias**
 
 Professores reconhecem o mérito dos alunos com moedas virtuais. Os alunos trocam essas moedas por vantagens
