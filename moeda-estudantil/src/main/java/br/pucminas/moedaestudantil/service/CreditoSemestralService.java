@@ -61,11 +61,7 @@ public class CreditoSemestralService {
             return false;
         }
         Professor professor = professorRepository.findParaAtualizarSaldo(professorId).orElseThrow();
-        professor.creditarSemestre(Professor.CREDITO_SEMESTRAL);
-        CreditoSemestral credito = new CreditoSemestral();
-        credito.setProfessor(professor);
-        credito.setSemestre(semestre);
-        credito.setValor(Professor.CREDITO_SEMESTRAL);
+        CreditoSemestral credito = professor.receberCreditoSemestral(semestre);
         creditoRepository.save(credito);
         return true;
     }

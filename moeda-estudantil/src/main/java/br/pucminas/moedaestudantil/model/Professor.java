@@ -39,6 +39,17 @@ public class Professor extends Usuario {
         this.saldo += valor;
     }
 
+    public CreditoSemestral receberCreditoSemestral(String semestre) {
+        creditarSemestre(CREDITO_SEMESTRAL);
+        return new CreditoSemestral(this, semestre, CREDITO_SEMESTRAL);
+    }
+
+    public TransferenciaMoeda enviarMoedas(Aluno destinatario, int valor, String motivo) {
+        debitarMoedas(valor);
+        destinatario.receberMoedas(valor);
+        return new TransferenciaMoeda(this, destinatario, valor, motivo);
+    }
+
     public void debitarMoedas(int valor) {
         if (valor > saldo) {
             throw new IllegalStateException("Saldo insuficiente.");

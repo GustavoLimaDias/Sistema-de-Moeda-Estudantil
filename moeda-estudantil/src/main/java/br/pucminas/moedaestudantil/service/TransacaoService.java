@@ -80,14 +80,7 @@ public class TransacaoService {
                     "Saldo insuficiente: você possui " + professor.getSaldo() + " moedas.");
         }
 
-        professor.debitarMoedas(valor);
-        aluno.receberMoedas(valor);
-
-        TransferenciaMoeda t = new TransferenciaMoeda();
-        t.setRemetente(professor);
-        t.setDestinatario(aluno);
-        t.setValor(valor);
-        t.setMotivo(request.motivo().trim());
+        TransferenciaMoeda t = professor.enviarMoedas(aluno, valor, request.motivo().trim());
         transferenciaRepository.save(t);
 
         eventos.publishEvent(new MoedasEnviadasEvent(t.getId()));
@@ -110,15 +103,10 @@ public class TransacaoService {
                     + vantagem.getCusto() + " moedas e você possui " + aluno.getSaldo() + ".");
         }
 
-        aluno.debitarMoedas(vantagem.getCusto());
-
-        ResgateVantagem resgate = new ResgateVantagem();
-        resgate.setAluno(aluno);
-        resgate.setVantagem(vantagem);
-        resgate.setValor(vantagem.getCusto());
-        do {
+        ResgateVantagem resgate = aluno.resgatar(vantagem);
+        while (resgateRepository.existsByCodigoCupom(resgate.getCodigoCupom())) {
             resgate.gerarCodigo();
-        } while (resgateRepository.existsByCodigoCupom(resgate.getCodigoCupom()));
+        }
         resgateRepository.save(resgate);
 
         eventos.publishEvent(new VantagemResgatadaEvent(resgate.getId()));

@@ -25,15 +25,22 @@ public class TransferenciaMoeda extends Transacao {
     @JoinColumn(name = "aluno_id", nullable = false)
     private Aluno destinatario;
 
+    protected TransferenciaMoeda() {
+    }
+
+    TransferenciaMoeda(Professor remetente, Aluno destinatario, int valor, String motivo) {
+        this.remetente = remetente;
+        this.destinatario = destinatario;
+        this.motivo = motivo;
+        setValor(valor);
+    }
+
     @Override
     public String getDescricao() {
         return "Envio de " + getValor() + " moedas: " + motivo;
     }
 
     public String getMotivo() { return motivo; }
-    public void setMotivo(String motivo) { this.motivo = motivo; }
     public Professor getRemetente() { return remetente; }
-    public void setRemetente(Professor remetente) { this.remetente = remetente; }
     public Aluno getDestinatario() { return destinatario; }
-    public void setDestinatario(Aluno destinatario) { this.destinatario = destinatario; }
 }
