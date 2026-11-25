@@ -12,6 +12,7 @@ import br.pucminas.moedaestudantil.security.RequerPerfil;
 import br.pucminas.moedaestudantil.security.SessaoUsuario;
 import br.pucminas.moedaestudantil.security.UsuarioLogado;
 import br.pucminas.moedaestudantil.service.AlunoService;
+import br.pucminas.moedaestudantil.service.ExtratoService;
 import br.pucminas.moedaestudantil.service.TransacaoService;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
@@ -33,10 +34,13 @@ public class AlunoController {
 
     private final AlunoService alunoService;
     private final TransacaoService transacaoService;
+    private final ExtratoService extratoService;
 
-    public AlunoController(AlunoService alunoService, TransacaoService transacaoService) {
+    public AlunoController(AlunoService alunoService, TransacaoService transacaoService,
+                           ExtratoService extratoService) {
         this.alunoService = alunoService;
         this.transacaoService = transacaoService;
+        this.extratoService = extratoService;
     }
 
     // ---------- CRUD ----------
@@ -84,7 +88,7 @@ public class AlunoController {
     @GetMapping("/me/extrato")
     @RequerPerfil(Perfil.ALUNO)
     public ExtratoResponse extrato(@UsuarioLogado SessaoUsuario sessao) {
-        return transacaoService.extratoAluno(sessao.id());
+        return extratoService.extratoAluno(sessao.id());
     }
 
     /** UC08 – resgatar vantagem (gera cupom e emails). */
