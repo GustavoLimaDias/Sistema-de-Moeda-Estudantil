@@ -11,6 +11,7 @@ import br.pucminas.moedaestudantil.security.RequerPerfil;
 import br.pucminas.moedaestudantil.security.SessaoUsuario;
 import br.pucminas.moedaestudantil.security.UsuarioLogado;
 import br.pucminas.moedaestudantil.service.ProfessorService;
+import br.pucminas.moedaestudantil.service.ExtratoService;
 import br.pucminas.moedaestudantil.service.TransacaoService;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
@@ -32,10 +33,13 @@ public class ProfessorController {
 
     private final ProfessorService professorService;
     private final TransacaoService transacaoService;
+    private final ExtratoService extratoService;
 
-    public ProfessorController(ProfessorService professorService, TransacaoService transacaoService) {
+    public ProfessorController(ProfessorService professorService, TransacaoService transacaoService,
+                               ExtratoService extratoService) {
         this.professorService = professorService;
         this.transacaoService = transacaoService;
+        this.extratoService = extratoService;
     }
 
     // ---------- UC14 – pré-cadastro (administrador) ----------
@@ -93,6 +97,6 @@ public class ProfessorController {
     @GetMapping("/me/extrato")
     @RequerPerfil(Perfil.PROFESSOR)
     public ExtratoResponse extrato(@UsuarioLogado SessaoUsuario sessao) {
-        return transacaoService.extratoProfessor(sessao.id());
+        return extratoService.extratoProfessor(sessao.id());
     }
 }
