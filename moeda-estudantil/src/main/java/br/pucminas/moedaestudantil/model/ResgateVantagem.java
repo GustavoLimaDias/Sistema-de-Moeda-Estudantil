@@ -62,6 +62,14 @@ public class ResgateVantagem extends Transacao {
         this.dataCancelamento = LocalDateTime.now();
     }
 
+    public boolean pertenceAoAluno(Long alunoId) {
+        return aluno != null && aluno.getId().equals(alunoId);
+    }
+
+    public boolean pertenceAEmpresa(Long empresaId) {
+        return vantagem != null && vantagem.pertenceAEmpresa(empresaId);
+    }
+
     @Override
     public String getDescricao() {
         return "Resgate de " + (vantagem != null ? vantagem.getNome() : "vantagem");

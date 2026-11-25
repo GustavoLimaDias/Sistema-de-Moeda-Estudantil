@@ -52,6 +52,10 @@ public class Aluno extends Usuario {
         this.saldo -= valor;
     }
 
+    public boolean possuiSaldo(int valor) {
+        return saldo >= valor;
+    }
+
     public String getCpf() { return cpf; }
     public void setCpf(String cpf) { this.cpf = cpf; }
     public String getRg() { return rg; }
