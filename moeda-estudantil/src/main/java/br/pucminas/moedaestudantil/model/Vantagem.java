@@ -38,6 +38,10 @@ public class Vantagem {
     @JoinColumn(name = "empresa_id", nullable = false)
     private EmpresaParceira empresa;
 
+    public boolean pertenceAEmpresa(Long empresaId) {
+        return empresa != null && empresa.getId().equals(empresaId);
+    }
+
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
     public String getNome() { return nome; }

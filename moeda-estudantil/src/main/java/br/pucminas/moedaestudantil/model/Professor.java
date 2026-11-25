@@ -46,6 +46,14 @@ public class Professor extends Usuario {
         this.saldo -= valor;
     }
 
+    public boolean podeReconhecer(Aluno aluno) {
+        return aluno.getInstituicao().getId().equals(instituicao.getId());
+    }
+
+    public boolean possuiSaldo(int valor) {
+        return saldo >= valor;
+    }
+
     public String getCpf() { return cpf; }
     public void setCpf(String cpf) { this.cpf = cpf; }
     public String getDepartamento() { return departamento; }

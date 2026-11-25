@@ -71,11 +71,11 @@ public class TransacaoService {
         Aluno aluno = alunoRepository.findParaAtualizarSaldo(request.alunoId())
                 .orElseThrow(() -> new RegraNegocioException("alunoId", "Aluno não encontrado."));
 
-        if (!aluno.getInstituicao().getId().equals(professor.getInstituicao().getId())) {
+        if (!professor.podeReconhecer(aluno)) {
             throw new RegraNegocioException("alunoId", "Este aluno não pertence à sua instituição.");
         }
         int valor = request.valor();
-        if (professor.getSaldo() < valor) {
+        if (!professor.possuiSaldo(valor)) {
             throw new RegraNegocioException("valor",
                     "Saldo insuficiente: você possui " + professor.getSaldo() + " moedas.");
         }
@@ -105,7 +105,7 @@ public class TransacaoService {
         if (!vantagem.isAtiva()) {
             throw new RegraNegocioException("vantagemId", "Esta vantagem não está mais disponível.");
         }
-        if (aluno.getSaldo() < vantagem.getCusto()) {
+        if (!aluno.possuiSaldo(vantagem.getCusto())) {
             throw new RegraNegocioException("vantagemId", "Saldo insuficiente: a vantagem custa "
                     + vantagem.getCusto() + " moedas e você possui " + aluno.getSaldo() + ".");
         }
@@ -150,7 +150,7 @@ public class TransacaoService {
     /** O aluno desiste de um cupom ainda não usado e recebe as moedas de volta. */
     public ResgateResponse cancelarResgateDoAluno(Long alunoId, String codigo) {
         ResgateVantagem resgate = buscarParaAtualizar(codigo);
-        if (!resgate.getAluno().getId().equals(alunoId)) {
+        if (!resgate.pertenceAoAluno(alunoId)) {
             throw new RecursoNaoEncontradoException("Cupom não encontrado.");
         }
         return cancelar(resgate, Perfil.ALUNO);
@@ -182,7 +182,7 @@ public class TransacaoService {
     }
 
     private void exigirDaEmpresa(ResgateVantagem resgate, Long empresaId) {
-        if (!resgate.getVantagem().getEmpresa().getId().equals(empresaId)) {
+        if (!resgate.pertenceAEmpresa(empresaId)) {
             throw new RecursoNaoEncontradoException("Cupom não encontrado para a sua empresa.");
         }
     }
