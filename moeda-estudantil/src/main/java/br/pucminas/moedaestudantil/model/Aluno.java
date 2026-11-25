@@ -52,6 +52,11 @@ public class Aluno extends Usuario {
         this.saldo -= valor;
     }
 
+    public ResgateVantagem resgatar(Vantagem vantagem) {
+        debitarMoedas(vantagem.getCusto());
+        return new ResgateVantagem(this, vantagem);
+    }
+
     public String getCpf() { return cpf; }
     public void setCpf(String cpf) { this.cpf = cpf; }
     public String getRg() { return rg; }

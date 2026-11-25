@@ -38,6 +38,16 @@ public class ResgateVantagem extends Transacao {
     @JoinColumn(name = "vantagem_id", nullable = false)
     private Vantagem vantagem;
 
+    protected ResgateVantagem() {
+    }
+
+    ResgateVantagem(Aluno aluno, Vantagem vantagem) {
+        this.aluno = aluno;
+        this.vantagem = vantagem;
+        setValor(vantagem.getCusto());
+        gerarCodigo();
+    }
+
     public String gerarCodigo() {
         this.codigoCupom = UUID.randomUUID().toString().replace("-", "").substring(0, 12).toUpperCase();
         return codigoCupom;
@@ -72,7 +82,5 @@ public class ResgateVantagem extends Transacao {
     public LocalDateTime getDataCancelamento() { return dataCancelamento; }
     public void setStatus(StatusResgate status) { this.status = status; }
     public Aluno getAluno() { return aluno; }
-    public void setAluno(Aluno aluno) { this.aluno = aluno; }
     public Vantagem getVantagem() { return vantagem; }
-    public void setVantagem(Vantagem vantagem) { this.vantagem = vantagem; }
 }

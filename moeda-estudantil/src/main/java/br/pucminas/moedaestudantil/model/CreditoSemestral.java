@@ -25,13 +25,20 @@ public class CreditoSemestral extends Transacao {
     @JoinColumn(name = "professor_id", nullable = false)
     private Professor professor;
 
+    protected CreditoSemestral() {
+    }
+
+    CreditoSemestral(Professor professor, String semestre, int valor) {
+        this.professor = professor;
+        this.semestre = semestre;
+        setValor(valor);
+    }
+
     @Override
     public String getDescricao() {
         return "Crédito semestral " + semestre;
     }
 
     public String getSemestre() { return semestre; }
-    public void setSemestre(String semestre) { this.semestre = semestre; }
     public Professor getProfessor() { return professor; }
-    public void setProfessor(Professor professor) { this.professor = professor; }
 }
